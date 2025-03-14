@@ -2,7 +2,7 @@
 @tailwind components;
 @tailwind utilities;
 
-:root {
+/* :root {
   --background: #ffffff;
   --foreground: #171717;
 }
@@ -13,7 +13,19 @@
     --foreground: #ededed;
   }
 }
-
+*/
+.theme-light {
+  --background: #ffffff;
+  --foreground: #171717;
+  --primarygray:#ececec;
+  --primaryyellow:#eff6ff;
+}
+.theme-dark {
+  --background: #0a0a0a;
+  --foreground: #ededed;
+  --primarygray:#2c2c2c;
+  --primaryyellow:#0f172a;
+}
 body {
   color: var(--foreground);
   background: var(--background);
