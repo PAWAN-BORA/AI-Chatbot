@@ -30,9 +30,6 @@ function reducer(state:State, action:any){
       msg:action.msg,
       id:getRandomId().toString(),
     });
-
-    console.log(action, 'action...')
-    console.log(prevMessages, 'action...')
     return {...state, messages:prevMessages}
   } else if(action.type=='aiMessage'){
 
