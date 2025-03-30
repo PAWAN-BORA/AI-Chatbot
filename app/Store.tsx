@@ -1,7 +1,10 @@
 "use client";
+import { getChatList } from "@/utils/chatFetch";
 import { getRandomId } from "@/utils/utils";
 import { stat } from "fs";
-import { act, ActionDispatch, createContext, ReactNode, useReducer } from "react";
+import { useSearchParams } from "next/navigation";
+import { useRouter } from "next/router";
+import { act, ActionDispatch, createContext, ReactNode, useEffect, useReducer } from "react";
 
 export type Message = {
   type:string,
@@ -34,13 +37,26 @@ function reducer(state:State, action:any){
   } else if(action.type=='aiMessage'){
 
   }
-  console.log('state not updated...')
   return state;
 }
 export default function Store({children}:{children:ReactNode}){
 
 
   const [state, dispatch] = useReducer(reducer, {sidebarList:[], messages:[]});
+  const searchParams = useSearchParams();
+  const chatId = searchParams.get("chat_id");
+  useEffect(()=>{
+    if(chatId==null){
+      return;
+    };
+    getChats();
+
+  }, [chatId]);
+
+  async function getChats(){
+    const chatList = await getChatList();
+    console.log(chatList);
+  }
   return <StoreContext.Provider 
     value={{
       sidebarList:state.sidebarList,

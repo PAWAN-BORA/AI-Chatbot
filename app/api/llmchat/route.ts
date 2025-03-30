@@ -3,6 +3,7 @@ import {ChatOllama, Ollama } from "@langchain/ollama";
 import {START, END, MessagesAnnotation, StateGraph, MemorySaver, PregelOptions, StateType, PregelNode} from "@langchain/langgraph";
 import { isAIMessageChunk } from "@langchain/core/messages";
 import { RunnableLambda } from "@langchain/core/runnables";
+import { newChat } from "@/model/chat";
 // const modelName = "deepseek-r1:1.5b";
 // const modelName = "deepseek-r1:8b";
 const modelName = "llama3.2:3b";
@@ -50,6 +51,18 @@ export async function POST(req:NextRequest){
 
 
   let data = await req.json();
+  let chatId = data.chatId;
+  if(chatId==null){
+    try {
+      chatId = await newChat(data.userId, data.ques.substring(0, 20));
+    } catch(err) {
+      console.log(err);
+      return new NextResponse("failed to create new chat.", {status:503, headers:{
+        "Content-Type": "text/plain",
+      }});
+    }
+
+  }
   try {
     const encoder = new TextEncoder();
 
@@ -77,24 +90,17 @@ export async function POST(req:NextRequest){
     let readableStream = new ReadableStream({
       async start(controller){
         try{
+          // let data = JSON.stringify({
+          //   type:"head",
+          //   chatId:chatId,
+          // });
+          controller.enqueue(`${chatId}##CHATID##`);
           for await (const [chunk, _metadata] of stream){
             let content = chunk.content;
-            // console.log(isAIMessageChunk(chunk));
-            // console.log(chunk, 'content.')
-            // console.log(_metadata, 'test..')
             if(chunk.response_metadata?.done==true){
               break;
             }
             controller.enqueue(encoder.encode(content));
-            // if(typeof content == "string") {
-            // } else if(Array.isArray(content)){
-            //   for(let item of content){
-            //     if(item.type=="text"){
-            //       controller.enqueue(item.text);
-            //
-            //     }
-            //   }
-            // }
           }
           controller.close();
         } catch(err) {

@@ -5,6 +5,8 @@ import { streamAsyncIterator } from "@/utils/utils";
 import { useContext, useEffect, useRef, useState } from "react"
 import Markdown from "react-markdown";
 import AnswerBlock from "./AnsBlock";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { saveChatMsg } from "@/utils/chatFetch";
 type ansData = {[key:string]:string}
 
 export default function Chatbox() {
@@ -12,35 +14,69 @@ export default function Chatbox() {
   const {messages} = useContext(StoreContext)!;
   const [ansList, setAnsList] = useState<ansData>({});
   const chatContainer = useRef<HTMLDivElement>(null);
+  const searchParams = useSearchParams();
+  const pathname = usePathname();
+  const router = useRouter();
   useEffect(()=>{
     let lastMsg = messages.at(-1);
     if(lastMsg!=undefined && !ansList[lastMsg.id]){
       getAnswer(lastMsg);
       if(chatContainer.current!=undefined){
-        chatContainer.current.scrollTop = chatContainer.current.scrollHeight;
+        // chatContainer.current.scrollTop = chatContainer.current.scrollHeight;
+        chatContainer.current.scrollTo({top:chatContainer.current.scrollHeight, behavior:"smooth"})
       }
     }
-  }, [messages.length])
+  }, [messages.length]);
+  
   async function getAnswer(msg:Message){
-    const reader = await getStream({ques:msg.msg}); 
+    let chatId = searchParams.get("chat_id");
+    console.log(chatId, 'chat id')
+    let payload = {
+      ques:msg.msg,
+      chatId:chatId,
+      userId:1,
+    }
+    const reader = await getStream(payload); 
+    let accumulatedData = "";
     for await (const chunk of streamAsyncIterator(reader)){
+      if(chunk.type=="head"){
+        const params = new URLSearchParams(searchParams.toString());
+        params.set("chat_id", chunk.chatId??"");
+        router.push(`${pathname}?${params}`);
+        chatId = chunk.chatId ?? "0";
+        continue;
+      }
+      accumulatedData += chunk.content ?? "";
       setAnsList((prev)=>{
         if(prev[msg.id]!=undefined){
-          let ans = prev[msg.id] + chunk;
+          let ans = prev[msg.id] + (chunk.content??"");
           return {...prev, [msg.id]:ans}
         } else {
-          return {...prev, [msg.id]:chunk}
+          return {...prev, [msg.id]:chunk.content??""}
         }
       });
+    };
+
+    let msgChatId = Number(chatId) ?? 0;
+    if(msgChatId==0){
+      return;
     }
+    let msgPayload = {
+      chatId:msgChatId,
+      ques:JSON.stringify(msg),
+      ans:accumulatedData
+    }
+
+    saveChatMsg(msgPayload);
   }
 
   return(
    <div className="flex-1 overflow-auto flex justify-center my-8" ref={chatContainer}>
       <div className="max-w-[736px] w-full">
-        {messages.map((item)=>{
+        {messages.map((item, index)=>{
+          let isLast = messages.length-1==index;
           return(
-            <div key={item.id} className="flex flex-col mb-4 min-h-[500px]">
+            <div key={item.id} className="flex flex-col mb-4 " style={{minHeight:isLast?"500px":"auto"}}>
               <div  className="self-end bg-primarygray max-w-[500px] p-2 rounded-lg mb-2 text-justify">
                 {item.msg}
               </div>
@@ -53,7 +89,7 @@ export default function Chatbox() {
           )
         })}
       </div>
-    </div>
+   </div>
   )
 }
 

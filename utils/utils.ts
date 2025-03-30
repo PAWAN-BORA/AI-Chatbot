@@ -11,10 +11,30 @@ export function streamAsyncIterator(reader:ReadableStreamDefaultReader<Uint8Arra
   return {
     async *[Symbol.asyncIterator]() {
       try{
+        let first = true;
         while(true){
           const {done, value} = await reader.read();
           if(done) break;
-          yield decoder.decode(value);
+          const chunk = decoder.decode(value)
+          if(first){
+            let chunkArr = chunk.split("##CHATID##");
+            yield  {
+              chatId:chunkArr[0],
+              type:"head",
+            }
+            if(chunkArr[1]!=undefined){
+              yield  {
+                content:chunkArr[1],
+                type:"chunk",
+              }
+            }
+            first = false;
+            continue;
+          }
+          yield  {
+            content:chunk,
+            type:"chunk",
+          }
         } 
       } finally {
         reader.releaseLock();
@@ -22,3 +42,5 @@ export function streamAsyncIterator(reader:ReadableStreamDefaultReader<Uint8Arra
     }
   }
 }
+
+
