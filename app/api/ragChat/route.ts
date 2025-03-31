@@ -121,7 +121,7 @@ Use three sentences maximum and keep the answer concise.
       }
       return input.question;
     };
-    const ragChain = RunnableSequence.from([
+    /* const ragChain = RunnableSequence.from([
       RunnablePassthrough.assign({
         context: (input: Record<string, unknown>) => {
           if ("chat_history" in input) {
@@ -133,7 +133,7 @@ Use three sentences maximum and keep the answer concise.
       }),
       chatPrompt,
       llm,
-    ]);
+    ]); */
     const chain = await createStuffDocumentsChain({
       llm:llm,
       outputParser:new StringOutputParser(),

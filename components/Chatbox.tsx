@@ -1,22 +1,24 @@
 "use client";
-import { Message, StoreContext } from "@/app/Store"
+import { ChatMsg, Message, StoreContext } from "@/app/Store"
 import { getStream } from "@/utils/getStream";
 import { streamAsyncIterator } from "@/utils/utils";
 import { useContext, useEffect, useRef, useState } from "react"
 import Markdown from "react-markdown";
 import AnswerBlock from "./AnsBlock";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { saveChatMsg } from "@/utils/chatFetch";
+import { getChatMsg, saveChatMsg } from "@/utils/chatFetch";
 type ansData = {[key:string]:string}
 
 export default function Chatbox() {
 
-  const {messages} = useContext(StoreContext)!;
+  const {messages, dispatch, getChats} = useContext(StoreContext)!;
   const [ansList, setAnsList] = useState<ansData>({});
   const chatContainer = useRef<HTMLDivElement>(null);
   const searchParams = useSearchParams();
   const pathname = usePathname();
   const router = useRouter();
+  const chatId = searchParams.get("chat_id");
+  const changeChat = useRef(true);
   useEffect(()=>{
     let lastMsg = messages.at(-1);
     if(lastMsg!=undefined && !ansList[lastMsg.id]){
@@ -28,9 +30,47 @@ export default function Chatbox() {
     }
   }, [messages.length]);
   
+  useEffect(()=>{
+    if(!changeChat.current){
+      changeChat.current = true;
+      return;
+    }
+    if(chatId==null){
+      clearChat();
+      return;
+    };
+
+    chatMsgList(chatId);
+  }, [chatId]);
+  function clearChat(){
+    dispatch({
+      type:"resetMsg",
+      quesList:[],
+    });
+    setAnsList({})
+  }
+  async function chatMsgList(chatId:string){
+    clearChat();
+    try {
+      const msgList:ChatMsg[] = await getChatMsg(chatId);
+      let quesList = [], ansList:ansData={};
+      for(let chat of msgList){
+        let quesId = chat.ques.id;
+        quesList.push(chat.ques);
+        ansList[quesId] = chat.ans;
+      }
+      dispatch({
+        type:"resetMsg",
+        quesList:quesList,
+      });
+      setAnsList(ansList)
+    } catch(err) {
+
+      console.log(err);
+    }
+  }
   async function getAnswer(msg:Message){
     let chatId = searchParams.get("chat_id");
-    console.log(chatId, 'chat id')
     let payload = {
       ques:msg.msg,
       chatId:chatId,
@@ -40,11 +80,13 @@ export default function Chatbox() {
     let accumulatedData = "";
     for await (const chunk of streamAsyncIterator(reader)){
       if(chunk.type=="head"){
-        const params = new URLSearchParams(searchParams.toString());
-        params.set("chat_id", chunk.chatId??"");
-        router.push(`${pathname}?${params}`);
-        chatId = chunk.chatId ?? "0";
-        continue;
+        if(chatId!==chunk.chatId){
+          chatId = chunk.chatId ?? "0";
+          changeChat.current = false;
+          getChats();
+          window.history.pushState(null, "", "?chat_id="+chunk.chatId)
+          continue;
+        }
       }
       accumulatedData += chunk.content ?? "";
       setAnsList((prev)=>{

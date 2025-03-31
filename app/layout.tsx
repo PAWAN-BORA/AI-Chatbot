@@ -1,5 +1,5 @@
 import { Metadata } from "next";
-import { ReactNode } from "react";
+import { ReactNode, Suspense } from "react";
 import "./globals.css";
 import { ReactScan } from "@/components/ReactScan";
 import ThemeProvider from "./ThemeProvider";
@@ -32,7 +32,9 @@ export default function RootLayout({children}:Readonly<{children:ReactNode}>){
       <body >
         <ThemeProvider>
           <Store>
-            {children}
+            <Suspense fallback="Loading...">
+              {children}
+            </Suspense>
           </Store>
         </ThemeProvider>
       </body>

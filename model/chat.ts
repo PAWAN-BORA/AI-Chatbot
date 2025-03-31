@@ -21,12 +21,31 @@ type ChatData = {
   title:string,
 }
 export async function getChatData(userId:number){
-  let [res] = await pool.execute("SELECT * from chat where user_id=?", [userId]);
+  let [res] = await pool.execute("SELECT * from chat where user_id=? ORDER BY chat_id DESC", [userId]);
   return (res as {[key:string]:string}[]).map((item)=>{
     return {
       chatId:item.chat_id,
       userId:item.user_id,
       title:item.title
     } as ChatData
+  });
+}
+
+
+export async function getChatMsg(chatId:number){
+  let [res] = await pool.execute("SELECT * from chat_msg where chat_id=?", [chatId]);
+  return (res as {[key:string]:string}[]).map((item)=>{
+    let ques = null;
+    try{
+      ques = JSON.parse(item.ques);
+    } catch {
+      ques = {};
+    }
+    return {
+      msgId:item.msgId,
+      chatId:item.chat_id,
+      ques:ques,
+      ans:item.ans
+    } 
   });
 }
