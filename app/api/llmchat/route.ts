@@ -3,7 +3,7 @@ import {ChatOllama, Ollama } from "@langchain/ollama";
 import {START, END, MessagesAnnotation, StateGraph, MemorySaver, PregelOptions, StateType, PregelNode} from "@langchain/langgraph";
 import { isAIMessageChunk } from "@langchain/core/messages";
 import { RunnableLambda } from "@langchain/core/runnables";
-import { newChat } from "@/model/chat";
+import { getLimetedChatMsg, newChat } from "@/model/chat";
 // const modelName = "deepseek-r1:1.5b";
 // const modelName = "deepseek-r1:8b";
 const modelName = "llama3.2:3b";
@@ -28,11 +28,13 @@ const llm = new ChatOllama({
 
 // Define the function that calls the model
 const callModel = async (state:typeof MessagesAnnotation.State)=>{
+  console.log('-------------------------------------------------');
+  console.log(state)
   const res = await llm.invoke(state.messages);
-  // console.log('this is res...', res);
-  // return {messages:[res]}
-  return {messages:res}
-  // return {}
+
+  console.log(res);
+  // return {messages:res}
+  return {}
 };
 
 
@@ -45,7 +47,7 @@ const workflow = new StateGraph(MessagesAnnotation)
 
 // Add memory
 const memory = new MemorySaver();
-const app = workflow.compile({checkpointer:memory});
+const app = workflow.compile();
 
 export async function POST(req:NextRequest){
 
@@ -61,21 +63,27 @@ export async function POST(req:NextRequest){
         "Content-Type": "text/plain",
       }});
     }
-
   }
   try {
     const encoder = new TextEncoder();
 
-    // const config = {configurable:{thread_id:"abc"}, streamMode:"updates"};
-    const input = [
-      {role:"user", content:data.ques},
-    ];
+    const prevMsg = await getLimetedChatMsg(chatId);
+    let input = [];
+    for(const msg of prevMsg){
+      input.push(
+        {role:"user", content:msg.ques.msg},
+        {role:"ai", content:msg.ans},
+      )
+    };
+    input.push({role:"user", content:data.ques});
     const config = {
       configurable: {
-        thread_id: "stream_events",
+        thread_id: chatId,
       },
       streamMode:"messages" as const
     };
+    
+    
     const stream = await app.stream({messages:input}, config);
     // console.log(stream, 'stream..')
     // const messages = await app.stream({messages:input}, {configurable:{thread_id:"abc"}});

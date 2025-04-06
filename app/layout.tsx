@@ -4,6 +4,8 @@ import "./globals.css";
 import { ReactScan } from "@/components/ReactScan";
 import ThemeProvider from "./ThemeProvider";
 import Store from "./Store";
+import { NextRequest } from "next/server";
+import { cookies } from "next/headers";
 
 // import localFont from "next/font/local";
 
@@ -24,11 +26,12 @@ export const metadata:Metadata = {
   title:"Chat Bot",
   description:"This is an ai chat bot with llm"
 }
-export default function RootLayout({children}:Readonly<{children:ReactNode}>){
-
+export default async function RootLayout({children}:Readonly<{children:ReactNode}>){
+  const cookie = await cookies()
+  const theme = cookie.get("theme")??{value:"light"}
   return(
-    <html lang="en" className="theme-light">
-      <ReactScan/>
+    <html lang="en" className={`theme-${theme.value}`}>
+      {/* <ReactScan/> */}
       <body >
         <ThemeProvider>
           <Store>

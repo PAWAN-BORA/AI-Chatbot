@@ -1,4 +1,6 @@
+import 'server-only'
 import pool from "@/lib/db";
+
 
 type ChatResult = {
   insertId:number,
@@ -42,10 +44,51 @@ export async function getChatMsg(chatId:number){
       ques = {};
     }
     return {
-      msgId:item.msgId,
+      msgId:item.msg_id,
       chatId:item.chat_id,
       ques:ques,
       ans:item.ans
     } 
   });
+}
+
+export async function getLimetedChatMsg(chatId:number, limit:number=100){
+  const query = `SELECT * from chat_msg WHERE chat_id=? LIMIT ${limit}`;
+  const values = [chatId];
+  let [res] = await pool.execute(query, values);
+  return (res as {[key:string]:string}[]).map((item)=>{
+    let ques = null;
+    try{
+      ques = JSON.parse(item.ques);
+    } catch {
+      ques = {};
+    }
+    return {
+      msgId:item.msg_id,
+      chatId:item.chat_id,
+      ques:ques,
+      ans:item.ans
+    } 
+  });
+}
+
+
+export async function deleteChat(chatId:number){
+  const connection = await pool.getConnection();
+  try {
+    await connection.beginTransaction();
+    await connection.execute("DELETE from chat_msg WHERE chat_id=?", [chatId]);
+    let [res] = await connection.execute("DELETE from chat WHERE chat_id=?", [chatId]);
+    connection.commit();
+    return (res as ChatResult).insertId ;
+  } catch(err) {
+    await connection.rollback();
+    if(err instanceof Error){
+      throw new Error("Error: "+err.message)
+    }
+    throw new Error("Error: unknown")
+  } finally {
+    connection.release();
+  }
+
 }

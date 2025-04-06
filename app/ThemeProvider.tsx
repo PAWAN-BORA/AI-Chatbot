@@ -16,11 +16,12 @@ export default function ThemeProvider({children}:{children:ReactNode}){
       setTheme(theme);
     }
   }, []);
-  function setTheme(theme:string){
+  async function setTheme(theme:string){
     let documentEle = document.documentElement;
     if(documentEle!=undefined){
       documentEle.setAttribute("class", `theme-${theme}`);
     }
+    document.cookie = `theme=${theme}`;
     setCurrentTheme(theme);
     localStorage.setItem("theme", theme)
   }
