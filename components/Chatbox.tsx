@@ -15,12 +15,10 @@ export default function Chatbox() {
   const [ansList, setAnsList] = useState<ansData>({});
   const chatContainer = useRef<HTMLDivElement>(null);
   const searchParams = useSearchParams();
-  const pathname = usePathname();
-  const router = useRouter();
   const chatId = searchParams.get("chat_id");
   const changeChat = useRef(true);
   useEffect(()=>{
-    let lastMsg = messages.at(-1);
+    const lastMsg = messages.at(-1);
     if(lastMsg!=undefined && !ansList[lastMsg.id]){
       getAnswer(lastMsg);
       if(chatContainer.current!=undefined){
@@ -28,7 +26,7 @@ export default function Chatbox() {
         chatContainer.current.scrollTo({top:chatContainer.current.scrollHeight, behavior:"smooth"})
       }
     }
-  }, [messages.length]);
+  }, []);
   
   useEffect(()=>{
     if(!changeChat.current){

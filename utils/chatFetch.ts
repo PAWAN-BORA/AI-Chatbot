@@ -15,9 +15,10 @@ export async function saveChatMsg(paylaod:ChatMsgPayload){
     if(res.ok){
       return await res.json();
     }
-    let json = await res.json();
+    const json = await res.json();
     throw new Error(json.msg??"");
   } catch(error) {
+    console.log(error);
     throw new Error('Error Occured!');
   }
 }
@@ -28,9 +29,10 @@ export async function getChatList(){
     if(res.ok){
       return await res.json();
     }
-    let json = await res.json();
+    const json = await res.json();
     throw new Error(json.msg??"");
   } catch(error) {
+    console.log(error);
     throw new Error('Error Occured!');
   }
 }
@@ -41,9 +43,10 @@ export async function getChatMsg(chatId:string){
     if(res.ok){
       return await res.json();
     }
-    let json = await res.json();
+    const json = await res.json();
     throw new Error(json.msg??"");
   } catch(error) {
+    console.log(error);
     throw new Error('Error Occured!');
   }
 }
@@ -57,9 +60,32 @@ export async function deleteChat(chatId:string){
     if(res.ok){
       return await res.json();
     }
-    let json = await res.json();
+    const json = await res.json();
     throw new Error(json.msg??"");
   } catch(error) {
+    console.log(error);
+    throw new Error('Error Occured!');
+  }
+}
+
+type UpdateChatPayload = {
+  chatId:string,
+  title:string,
+}
+export async function updateChat(payload:UpdateChatPayload){
+  const url = "/api/chat";
+  try {
+    const res = await fetch(url, {
+      method:"PUT",
+      body:JSON.stringify(payload)
+    });
+    if(res.ok){
+      return await res.json();
+    }
+    const json = await res.json();
+    throw new Error(json.msg??"");
+  } catch(error) {
+    console.log(error);
     throw new Error('Error Occured!');
   }
 }

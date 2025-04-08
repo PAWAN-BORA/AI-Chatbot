@@ -41,7 +41,7 @@ export const StoreContext = createContext<null|StoreValue>(null)
 
 function reducer(state:State, action:Action):State{
   if(action.type == 'humanMsg'){
-    let prevMessages = [...state.messages];
+    const prevMessages = [...state.messages];
     prevMessages.push({
       type:action.type,
       msg:action.msg??"",

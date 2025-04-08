@@ -35,9 +35,7 @@ export default async function RootLayout({children}:Readonly<{children:ReactNode
       <body >
         <ThemeProvider>
           <Store>
-            <Suspense fallback="Loading...">
-              {children}
-            </Suspense>
+            {children}
           </Store>
         </ThemeProvider>
       </body>

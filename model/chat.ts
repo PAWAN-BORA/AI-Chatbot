@@ -7,13 +7,13 @@ type ChatResult = {
 }
 export async function newChat(userId:string, title:string){
 
-  let [res] = await pool.execute("INSERT INTO chat (user_id, title) VALUES (?, ?)", [userId, title]);
+  const [res] = await pool.execute("INSERT INTO chat (user_id, title) VALUES (?, ?)", [userId, title]);
   return (res as ChatResult).insertId ;
 
 }
 
 export async function addChatMsg(chatId:number, ques:string, ans:string){
-  let [res] = await pool.execute("INSERT INTO chat_msg (chat_id, ques, ans) VALUES (?, ?, ?)", [chatId, ques, ans]);
+  const [res] = await pool.execute("INSERT INTO chat_msg (chat_id, ques, ans) VALUES (?, ?, ?)", [chatId, ques, ans]);
   return (res as ChatResult).insertId ;
 }
 
@@ -23,7 +23,7 @@ type ChatData = {
   title:string,
 }
 export async function getChatData(userId:number){
-  let [res] = await pool.execute("SELECT * from chat where user_id=? ORDER BY chat_id DESC", [userId]);
+  const [res] = await pool.execute("SELECT * from chat where user_id=? ORDER BY chat_id DESC", [userId]);
   return (res as {[key:string]:string}[]).map((item)=>{
     return {
       chatId:item.chat_id,
@@ -35,7 +35,7 @@ export async function getChatData(userId:number){
 
 
 export async function getChatMsg(chatId:number){
-  let [res] = await pool.execute("SELECT * from chat_msg where chat_id=?", [chatId]);
+  const [res] = await pool.execute("SELECT * from chat_msg where chat_id=?", [chatId]);
   return (res as {[key:string]:string}[]).map((item)=>{
     let ques = null;
     try{
@@ -55,7 +55,7 @@ export async function getChatMsg(chatId:number){
 export async function getLimetedChatMsg(chatId:number, limit:number=100){
   const query = `SELECT * from chat_msg WHERE chat_id=? LIMIT ${limit}`;
   const values = [chatId];
-  let [res] = await pool.execute(query, values);
+  const [res] = await pool.execute(query, values);
   return (res as {[key:string]:string}[]).map((item)=>{
     let ques = null;
     try{
@@ -78,7 +78,7 @@ export async function deleteChat(chatId:number){
   try {
     await connection.beginTransaction();
     await connection.execute("DELETE from chat_msg WHERE chat_id=?", [chatId]);
-    let [res] = await connection.execute("DELETE from chat WHERE chat_id=?", [chatId]);
+    const [res] = await connection.execute("DELETE from chat WHERE chat_id=?", [chatId]);
     connection.commit();
     return (res as ChatResult).insertId ;
   } catch(err) {
@@ -90,5 +90,12 @@ export async function deleteChat(chatId:number){
   } finally {
     connection.release();
   }
+
+}
+
+export async function updateChatTitle(chatId:number, title:string){
+  const [res] = await pool.execute("UPDATE chat SET title=? WHERE chat_id=?", [title, chatId]);
+  console.log(res, 'res....')
+  return (res as ChatResult).insertId ;
 
 }
