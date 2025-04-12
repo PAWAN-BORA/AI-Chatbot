@@ -3,16 +3,17 @@ import { ChatMsg, Message, StoreContext } from "@/app/Store"
 import { getStream } from "@/utils/getStream";
 import { streamAsyncIterator } from "@/utils/utils";
 import { useContext, useEffect, useRef, useState } from "react"
-import Markdown from "react-markdown";
 import AnswerBlock from "./AnsBlock";
-import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import {useSearchParams } from "next/navigation";
 import { getChatMsg, saveChatMsg } from "@/utils/chatFetch";
+import DotLoader from "./DotLoader";
 type ansData = {[key:string]:string}
 
 export default function Chatbox() {
 
   const {messages, dispatch, getChats} = useContext(StoreContext)!;
   const [ansList, setAnsList] = useState<ansData>({});
+  const [loading, setLoading] = useState<boolean>(false);
   const chatContainer = useRef<HTMLDivElement>(null);
   const searchParams = useSearchParams();
   const chatId = searchParams.get("chat_id");
@@ -26,7 +27,7 @@ export default function Chatbox() {
         chatContainer.current.scrollTo({top:chatContainer.current.scrollHeight, behavior:"smooth"})
       }
     }
-  }, []);
+  }, [messages.length]);
   
   useEffect(()=>{
     if(!changeChat.current){
@@ -51,9 +52,9 @@ export default function Chatbox() {
     clearChat();
     try {
       const msgList:ChatMsg[] = await getChatMsg(chatId);
-      let quesList = [], ansList:ansData={};
-      for(let chat of msgList){
-        let quesId = chat.ques.id;
+      const quesList = [], ansList:ansData={};
+      for(const chat of msgList){
+        const quesId = chat.ques.id;
         quesList.push(chat.ques);
         ansList[quesId] = chat.ans;
       }
@@ -69,12 +70,14 @@ export default function Chatbox() {
   }
   async function getAnswer(msg:Message){
     let chatId = searchParams.get("chat_id");
-    let payload = {
+    setLoading(true);
+    const payload = {
       ques:msg.msg,
       chatId:chatId,
       userId:1,
     }
     const reader = await getStream(payload); 
+    setLoading(false);
     let accumulatedData = "";
     for await (const chunk of streamAsyncIterator(reader)){
       if(chunk.type=="head"){
@@ -89,7 +92,7 @@ export default function Chatbox() {
       accumulatedData += chunk.content ?? "";
       setAnsList((prev)=>{
         if(prev[msg.id]!=undefined){
-          let ans = prev[msg.id] + (chunk.content??"");
+          const ans = prev[msg.id] + (chunk.content??"");
           return {...prev, [msg.id]:ans}
         } else {
           return {...prev, [msg.id]:chunk.content??""}
@@ -97,11 +100,11 @@ export default function Chatbox() {
       });
     };
 
-    let msgChatId = Number(chatId) ?? 0;
+    const msgChatId = Number(chatId) ?? 0;
     if(msgChatId==0){
       return;
     }
-    let msgPayload = {
+    const msgPayload = {
       chatId:msgChatId,
       ques:JSON.stringify(msg),
       ans:accumulatedData
@@ -114,7 +117,7 @@ export default function Chatbox() {
    <div className="flex-1 overflow-auto flex justify-center my-8" ref={chatContainer}>
       <div className="max-w-[736px] w-full">
         {messages.map((item, index)=>{
-          let isLast = messages.length-1==index;
+          const isLast = messages.length-1==index;
           return(
             <div key={item.id} className="flex flex-col mb-4 " style={{minHeight:isLast?"500px":"auto"}}>
               <div  className="self-end bg-primarygray max-w-[500px] p-2 rounded-lg mb-2 text-justify">
@@ -124,6 +127,9 @@ export default function Chatbox() {
                 <div className="bg-primaryyellow py-2 rounded-lg p-2 text-justify">
                   <AnswerBlock ansStr={ansList[item.id]}/>
                 </div>
+              }
+              {loading && isLast && 
+                <DotLoader/>
               }
             </div>
           )

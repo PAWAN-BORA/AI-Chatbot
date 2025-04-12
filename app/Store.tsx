@@ -3,6 +3,7 @@ import { getChatList } from "@/utils/chatFetch";
 import { getRandomId } from "@/utils/utils";
 import { ActionDispatch, createContext, ReactNode, useEffect, useReducer } from "react";
 
+
 export type Message = {
   type:string,
   msg:string,
@@ -35,6 +36,9 @@ type StoreValue = {
   dispatch:ActionDispatch<[action: Action]>
   getChats:()=>void;
 }
+
+
+
 
 export const StoreContext = createContext<null|StoreValue>(null)
 

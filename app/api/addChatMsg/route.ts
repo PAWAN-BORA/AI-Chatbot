@@ -5,7 +5,7 @@ import { NextRequest, NextResponse } from "next/server";
 
 export async function POST(req:NextRequest){
 
-  let data = await req.json();
+  const data = await req.json();
   if(data.chatId==undefined || data.ques==undefined || data.ans==undefined){
     return NextResponse.json({msg:"failed"}, {status:400})
   }

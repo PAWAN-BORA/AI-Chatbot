@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import {ChatOllama, Ollama } from "@langchain/ollama";
-import { BaseMessageLike } from "@langchain/core/messages";
+import {ChatOllama} from "@langchain/ollama";
 import { ChatPromptTemplate } from "@langchain/core/prompts";
 const modelName = "deepseek-r1:1.5b";
 // const modelName = "deepseek-r1:8b";
@@ -15,16 +14,10 @@ const llm = new ChatOllama({
   // disableStreaming:true,
   // other params...
 });
-export function GET(_req:Request){
-
-
-  return Response.json({"test":"success"});
-  
-}
 export async function POST(req:NextRequest){
 
 
-  let data = await req.json();
+  const data = await req.json();
   try {
     const encoder = new TextEncoder();
     const systemTemplate = "Translate the following from English into {language}";
@@ -38,15 +31,15 @@ export async function POST(req:NextRequest){
     // ];
     const promptValue = await promptTemplate.invoke({language:"Hindi", text:data.ques})
     const stream = await llm.stream(promptValue);
-    let readableStream = new ReadableStream({
+    const readableStream = new ReadableStream({
       async start(controller){
         try{
           for await (const chunck of stream){
-            let content = chunck.content;
+            const content = chunck.content;
             if(typeof content == "string") {
               controller.enqueue(encoder.encode(content));
             } else if(Array.isArray(content)){
-              for(let item of content){
+              for(const item of content){
                 if(item.type=="text"){
                   controller.enqueue(item.text);
 

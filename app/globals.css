@@ -19,6 +19,8 @@
   --foreground: #171717;
   --primarygray:#ececec;
   --primaryyellow:#eff6ff;
+  --success:green;
+  --error:red;
   --codebg:rgb(250, 250, 250);
 }
 .theme-dark {
@@ -26,6 +28,8 @@
   --foreground: #ededed;
   --primarygray:#2c2c2c;
   --primaryyellow:#0f172a;
+  --success:green;
+  --error:red;
   --codebg:rgb(40, 44, 52);
 }
 body {

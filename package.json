@@ -15,13 +15,14 @@
     "@langchain/openai": "^0.4.3",
     "langchain": "^0.3.15",
     "mysql2": "^3.14.0",
-    "next": "15.1.6",
+    "next": "^15.3.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "react-markdown": "^10.0.0",
-    "react-scan": "^0.2.8",
+    "react-scan": "^0.0.44",
     "react-syntax-highlighter": "^15.6.1",
-    "swr": "^2.3.2"
+    "swr": "^2.3.2",
+    "zustand": "^5.0.3"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",

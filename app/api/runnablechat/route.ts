@@ -3,8 +3,8 @@ import {ChatOllama } from "@langchain/ollama";
 import { RunnableWithMessageHistory } from "@langchain/core/runnables";
 import { InMemoryChatMessageHistory } from "@langchain/core/chat_history";
 import { ChatPromptTemplate } from "@langchain/core/prompts";
-import { ChatOpenAI, OpenAI } from "@langchain/openai";
-import { HumanMessage, SystemMessage } from "@langchain/core/messages";
+// import { ChatOpenAI, OpenAI } from "@langchain/openai";
+// import { HumanMessage, SystemMessage } from "@langchain/core/messages";
 // const modelName = "deepseek-r1:1.5b";
 // const modelName = "deepseek-r1:8b";
 const modelName = "llama3.2:3b";
@@ -54,7 +54,7 @@ const withMessageHistory = new RunnableWithMessageHistory({
 export async function POST(req:NextRequest){
 
 
-  let data = await req.json();
+  const data = await req.json();
   try {
     const encoder = new TextEncoder();
     const config = {
@@ -65,17 +65,17 @@ export async function POST(req:NextRequest){
     const stream = await withMessageHistory.stream({text:data.ques}, config);
     // const stream = await llm.stream(data.ques);
     // console.log(stream, 'this is stream..');
-    let readableStream = new ReadableStream({
+    const readableStream = new ReadableStream({
       async start(controller){
         try{
           for await (const chunk of stream){
             console.log(chunk, 'chunck..');
-            let content = chunk.content;
+            const content = chunk.content;
                   // controller.enqueue(encoder.encode(chunk));
             if(typeof content == "string") {
               controller.enqueue(encoder.encode(content));
             } else if(Array.isArray(content)){
-              for(let item of content){
+              for(const item of content){
                 if(item.type=="text"){
                   controller.enqueue(item.text);
 

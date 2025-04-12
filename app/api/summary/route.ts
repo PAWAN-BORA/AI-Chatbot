@@ -1,15 +1,15 @@
 
 import { NextRequest, NextResponse } from "next/server";
 import {ChatOllama } from "@langchain/ollama";
-import { RunnableWithMessageHistory } from "@langchain/core/runnables";
-import { InMemoryChatMessageHistory } from "@langchain/core/chat_history";
-import { ChatPromptTemplate, PromptTemplate } from "@langchain/core/prompts";
-import { ChatOpenAI, OpenAI } from "@langchain/openai";
-import { HumanMessage, SystemMessage } from "@langchain/core/messages";
-import { RecursiveCharacterTextSplitter, TokenTextSplitter } from "langchain/text_splitter";
+// import { RunnableWithMessageHistory } from "@langchain/core/runnables";
+// import { InMemoryChatMessageHistory } from "@langchain/core/chat_history";
+import { PromptTemplate } from "@langchain/core/prompts";
+// import { ChatOpenAI, OpenAI } from "@langchain/openai";
+// import { HumanMessage, SystemMessage } from "@langchain/core/messages";
+import { RecursiveCharacterTextSplitter } from "langchain/text_splitter";
 import fs from 'fs';
 import path from 'path';
-import { loadSummarizationChain } from "langchain/chains";
+// import { loadSummarizationChain } from "langchain/chains";
 import { createStuffDocumentsChain } from "langchain/chains/combine_documents";
 import { StringOutputParser } from "@langchain/core/output_parsers";
 // const modelName = "deepseek-r1:1.5b";
@@ -25,7 +25,7 @@ const llm = new ChatOllama({
   temperature: 0,
   maxRetries: 2,
 });
-let docPath = path.join(process.cwd()+"/public/pagesm.txt");
+const docPath = path.join(process.cwd()+"/public/pagesm.txt");
 const text = fs.readFileSync(docPath, 'utf8');
 // console.log(docs, 'this is docs..')
 const splitter = new RecursiveCharacterTextSplitter({
@@ -58,14 +58,14 @@ console.log(docs.length);
 export async function POST(req:NextRequest){
 
 
-  let data = await req.json();
+  const data = await req.json();
   try {
     const encoder = new TextEncoder();
-    const config = {
-      configurable: {
-        sessionId: "history_id",
-      },
-    };
+    // const config = {
+    //   configurable: {
+    //     sessionId: "history_id",
+    //   },
+    // };
     const prompt = PromptTemplate.fromTemplate(
       "Write a concise summary of the following also {msg}:\n\n{context}"
     );
@@ -81,7 +81,7 @@ export async function POST(req:NextRequest){
     // const stream = await summarizeChain.stream({input_documents:docs});
     // console.log(chain, 'this is chain..')
     const stream = await chain.stream({context:docs, msg:data.ques});
-    let readableStream = new ReadableStream({
+    const readableStream = new ReadableStream({
       async start(controller){
         try{
           for await (const chunk of stream){

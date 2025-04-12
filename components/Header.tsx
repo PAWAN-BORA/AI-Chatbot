@@ -1,6 +1,6 @@
 "use client";
 import { ThemeContext } from "@/app/ThemeProvider"
-import { MouseEvent, MouseEventHandler, useContext, useEffect, useState } from "react"
+import { MouseEvent, useContext, useEffect, useState } from "react"
 
 export default function Header(){
 

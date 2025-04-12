@@ -1,8 +1,7 @@
 "use client"
 import { ChatData, StoreContext } from "@/app/Store"
-import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import { useContext, useEffect, useRef, useState } from "react"
-import Tooltip from "./ToolTip";
 import Modal from "./Modal";
 import { deleteChat, updateChat } from "@/utils/chatFetch";
 
@@ -16,7 +15,6 @@ export default function Sidebar() {
     chat:null,
   });
   const [deleting, setDeleting] = useState(false);
-  const pathname = usePathname();
 
   function changeChat(chat:ChatData|null){
     if(chat==null){
@@ -49,6 +47,7 @@ export default function Sidebar() {
 
     } catch(err){
 
+      console.log(err);
       // TODO: show error snackbar.
     } finally {
       setDeleting(false)

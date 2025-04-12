@@ -14,6 +14,8 @@ export default {
         primarygray: "var(--primarygray)",
         primaryyellow: "var(--primaryyellow)",
         codebg: "var(--codebg)",
+        success: "var(--success)",
+        error: "var(--error)",
       },
     },
   },

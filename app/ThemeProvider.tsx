@@ -11,13 +11,13 @@ export default function ThemeProvider({children}:{children:ReactNode}){
 
   const [currentTheam, setCurrentTheme] = useState("light");
   useEffect(()=>{
-    let theme = localStorage.getItem("theme");
+    const theme = localStorage.getItem("theme");
     if(theme!=undefined){
       setTheme(theme);
     }
   }, []);
   async function setTheme(theme:string){
-    let documentEle = document.documentElement;
+    const documentEle = document.documentElement;
     if(documentEle!=undefined){
       documentEle.setAttribute("class", `theme-${theme}`);
     }

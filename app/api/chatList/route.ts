@@ -1,7 +1,7 @@
 import { getChatData } from "@/model/chat";
-import { NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 
-export async function GET(_req:NextRequest){
+export async function GET(){
   try {
     const data = await getChatData(1);
     return NextResponse.json(data, {status:200})

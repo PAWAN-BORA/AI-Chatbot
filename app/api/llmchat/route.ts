@@ -1,21 +1,14 @@
 import { NextRequest, NextResponse } from "next/server";
-import {ChatOllama, Ollama } from "@langchain/ollama";
-import {START, END, MessagesAnnotation, StateGraph, MemorySaver, PregelOptions, StateType, PregelNode} from "@langchain/langgraph";
-import { isAIMessageChunk } from "@langchain/core/messages";
-import { RunnableLambda } from "@langchain/core/runnables";
+import {ChatOllama} from "@langchain/ollama";
+import {START, END, StateGraph, Annotation} from "@langchain/langgraph";
+import { MessageType } from "@langchain/core/messages";
 import { getLimetedChatMsg, newChat } from "@/model/chat";
+import { StringWithAutocomplete } from "@langchain/core/utils/types";
 // const modelName = "deepseek-r1:1.5b";
 // const modelName = "deepseek-r1:8b";
 const modelName = "llama3.2:3b";
 // const modelName = "llama3.1";
 
-// const llm = new Ollama({
-//   baseUrl: "http://192.168.1.37:11434",
-//   model: modelName, // Default value
-//   temperature: 0,
-//   maxRetries: 2,
-//   // other params...
-// });
 const llm = new ChatOllama({
   baseUrl: "http://172.24.64.1:11434",
   model: modelName, // Default value
@@ -26,33 +19,52 @@ const llm = new ChatOllama({
 });
 
 
-// Define the function that calls the model
-const callModel = async (state:typeof MessagesAnnotation.State)=>{
-  console.log('-------------------------------------------------');
-  console.log(state)
-  const res = await llm.invoke(state.messages);
+type DBMessage = {role:StringWithAutocomplete<MessageType>, content:string }
+const StateAnnotaion = Annotation.Root({
+  dbMessages:Annotation<DBMessage[]>,
+  chatId:Annotation<number>,
+  userQues:Annotation<string>,
 
-  console.log(res);
-  // return {messages:res}
-  return {}
+})
+
+const dbMsg = async(state:typeof StateAnnotaion.State)=>{
+  const prevMsg = await getLimetedChatMsg(state.chatId);
+  const messages:DBMessage[] = [];
+  for(const msg of prevMsg){
+    messages.push(
+      {role:"human", content:msg.ques.msg},
+      {role:"ai", content:msg.ans}
+    )
+  };
+  messages.push({role:"human", content:state.userQues});
+  return {dbMessages:messages};
+}
+// Define the function that calls the model
+const callModel = async (state:typeof StateAnnotaion.State)=>{
+  await llm.invoke(state.dbMessages);
+  return {};
 };
+
+
 
 
 // const unstreamed = RunnableLambda.from(unstreamed)
 // Define a new graph
-const workflow = new StateGraph(MessagesAnnotation)
+const workflow = new StateGraph(StateAnnotaion)
+.addNode("dbMsg", dbMsg)
 .addNode("model", callModel)
-.addEdge(START, "model")
+.addEdge(START, "dbMsg")
+.addEdge("dbMsg", "model")
 .addEdge("model", END);
 
 // Add memory
-const memory = new MemorySaver();
+// const memory = new MemorySaver();
 const app = workflow.compile();
 
 export async function POST(req:NextRequest){
 
 
-  let data = await req.json();
+  const data = await req.json();
   let chatId = data.chatId;
   if(chatId==null){
     try {
@@ -67,15 +79,6 @@ export async function POST(req:NextRequest){
   try {
     const encoder = new TextEncoder();
 
-    const prevMsg = await getLimetedChatMsg(chatId);
-    let input = [];
-    for(const msg of prevMsg){
-      input.push(
-        {role:"user", content:msg.ques.msg},
-        {role:"ai", content:msg.ans},
-      )
-    };
-    input.push({role:"user", content:data.ques});
     const config = {
       configurable: {
         thread_id: chatId,
@@ -84,27 +87,13 @@ export async function POST(req:NextRequest){
     };
     
     
-    const stream = await app.stream({messages:input}, config);
-    // console.log(stream, 'stream..')
-    // const messages = await app.stream({messages:input}, {configurable:{thread_id:"abc"}});
-    // console.log(messages);
-    // for await (const [message, _metadata] of stream){
-    //    if (isAIMessageChunk(message) && message.tool_call_chunks?.length) {
-    //     console.log(`${message.getType()} MESSAGE TOOL CALL CHUNK: ${message.tool_call_chunks[0].args}`);
-    //   } else {
-    //     console.log(`${message.getType()} MESSAGE CONTENT: ${message.content}`);
-    //   }
-    // }
-    let readableStream = new ReadableStream({
+    const stream = await app.stream({chatId:chatId, userQues:data.ques}, config);
+    const readableStream = new ReadableStream({
       async start(controller){
         try{
-          // let data = JSON.stringify({
-          //   type:"head",
-          //   chatId:chatId,
-          // });
           controller.enqueue(`${chatId}##CHATID##`);
-          for await (const [chunk, _metadata] of stream){
-            let content = chunk.content;
+          for await (const [chunk] of stream){
+            const content = chunk.content;
             if(chunk.response_metadata?.done==true){
               break;
             }
