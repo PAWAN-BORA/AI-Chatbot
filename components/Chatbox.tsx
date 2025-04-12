@@ -7,11 +7,15 @@ import AnswerBlock from "./AnsBlock";
 import {useSearchParams } from "next/navigation";
 import { getChatMsg, saveChatMsg } from "@/utils/chatFetch";
 import DotLoader from "./DotLoader";
+import useStore from "@/store/store";
 type ansData = {[key:string]:string}
 
 export default function Chatbox() {
 
-  const {messages, dispatch, getChats} = useContext(StoreContext)!;
+  const {dispatch} = useContext(StoreContext)!;
+  const messages = useStore(state=>state.messages);
+  const updateMessages = useStore(state=>state.updateMessages);
+  const updateChatList = useStore(state=>state.updateChatList);
   const [ansList, setAnsList] = useState<ansData>({});
   const [loading, setLoading] = useState<boolean>(false);
   const chatContainer = useRef<HTMLDivElement>(null);
@@ -20,7 +24,10 @@ export default function Chatbox() {
   const changeChat = useRef(true);
   useEffect(()=>{
     const lastMsg = messages.at(-1);
+    console.log(lastMsg, 'this is last msg');
+    // console.log(ansList[lastMsg?.id], 'this is last msg');
     if(lastMsg!=undefined && !ansList[lastMsg.id]){
+      console.log("this is inside the if block.")
       getAnswer(lastMsg);
       if(chatContainer.current!=undefined){
         // chatContainer.current.scrollTop = chatContainer.current.scrollHeight;
@@ -34,40 +41,41 @@ export default function Chatbox() {
       changeChat.current = true;
       return;
     }
+    updateMessages([]);
     if(chatId==null){
-      clearChat();
       return;
     };
 
-    chatMsgList(chatId);
-  }, [chatId]);
-  function clearChat(){
-    dispatch({
-      type:"resetMsg",
-      quesList:[],
-    });
-    setAnsList({})
-  }
-  async function chatMsgList(chatId:string){
-    clearChat();
-    try {
-      const msgList:ChatMsg[] = await getChatMsg(chatId);
-      const quesList = [], ansList:ansData={};
-      for(const chat of msgList){
-        const quesId = chat.ques.id;
-        quesList.push(chat.ques);
-        ansList[quesId] = chat.ans;
-      }
-      dispatch({
-        type:"resetMsg",
-        quesList:quesList,
-      });
-      setAnsList(ansList)
-    } catch(err) {
+    async function chatMsgList(chatId:string){
+      try {
+        const msgList:ChatMsg[] = await getChatMsg(chatId);
+        const quesList = [], ansList:ansData={};
+        for(const chat of msgList){
+          const quesId = chat.ques.id;
+          quesList.push(chat.ques);
+          ansList[quesId] = chat.ans;
+        }
+        updateMessages(quesList);
+        setAnsList(ansList)
+        // dispatch({
+        //   type:"resetMsg",
+        //   quesList:quesList,
+        // });
+        // setAnsList(ansList)
+      } catch(err) {
 
-      console.log(err);
+        console.log(err);
+      }
     }
-  }
+    chatMsgList(chatId);
+  }, [chatId, updateMessages]);
+  // function clearChat(){
+  //   dispatch({
+  //     type:"resetMsg",
+  //     quesList:[],
+  //   });
+  //   setAnsList({})
+  // }
   async function getAnswer(msg:Message){
     let chatId = searchParams.get("chat_id");
     setLoading(true);
@@ -84,7 +92,7 @@ export default function Chatbox() {
         if(chatId!==chunk.chatId){
           chatId = chunk.chatId ?? "0";
           changeChat.current = false;
-          getChats();
+          updateChatList();
           window.history.pushState(null, "", "?chat_id="+chunk.chatId)
           continue;
         }

@@ -4,11 +4,14 @@ import { useSearchParams } from "next/navigation";
 import { useContext, useEffect, useRef, useState } from "react"
 import Modal from "./Modal";
 import { deleteChat, updateChat } from "@/utils/chatFetch";
+import useStore from "@/store/store";
 
 
 export default function Sidebar() {
 
-  const {sidebarList, getChats} = useContext(StoreContext)!;
+  // const {getChats} = useContext(StoreContext)!;
+  const sidebarList = useStore(state=>state.chatList);
+  const updateChatList = useStore(state=>state.updateChatList);
   const searchParams = useSearchParams();
   const [delObj, setDelObj] = useState<{status:boolean, chat:null|ChatData}>({
     status:false,
@@ -18,8 +21,7 @@ export default function Sidebar() {
 
   function changeChat(chat:ChatData|null){
     if(chat==null){
-
-    window.history.pushState(null, "", "/");
+      window.history.pushState(null, "", "/");
       return;
     }
     window.history.pushState(null, "", "?chat_id="+chat.chatId)
@@ -39,7 +41,7 @@ export default function Sidebar() {
       setDelObj((prev)=>{
         return {...prev, status:false, chat:null}
       });
-      getChats();
+      updateChatList();
       const chatId = searchParams.get("chat_id");
       if(chatId==chat.chatId){
         changeChat(null);
@@ -118,7 +120,6 @@ function SideDiv({chat, changeChat, handleDelete}:Readonly<SideDivProps>){
   function handleDoubleClick(){
     setIsEditable(true);
     setTimeout(() => {
-      console.log(divRef.current)
       const ele = divRef.current;
       ele?.focus();
       if(ele==null)return;
@@ -136,7 +137,6 @@ function SideDiv({chat, changeChat, handleDelete}:Readonly<SideDivProps>){
     updateTitle();
   }
   async function updateTitle(){
-    console.log(title)
     try {
       const text = divRef.current?.innerText;
       const payload = {

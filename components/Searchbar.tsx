@@ -1,19 +1,23 @@
 "use client"
 
 import { StoreContext } from "@/app/Store";
+import useStore from "@/store/store";
+import { getRandomId } from "@/utils/utils";
 import { FormEvent, useContext, useState } from "react";
 
 export default function Searchbar() {
 
   const [inputVal, setInputVal] = useState("");
   const {dispatch} = useContext(StoreContext)!
+  const setMessage = useStore(state=>state.setMessage);
 
   const handleSubmit = (e:FormEvent)=>{
     e.preventDefault();
-    dispatch({
-      type:"humanMsg",
-      msg:inputVal,
-    });
+    // dispatch({
+    //   type:"humanMsg",
+    //   msg:inputVal,
+    // });
+    setMessage({type:"humnaMsg", msg:inputVal, id:getRandomId().toString()})
     setInputVal("");
   }
 

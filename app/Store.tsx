@@ -34,7 +34,7 @@ type StoreValue = {
   sidebarList:ChatData[],
   messages:Message[],
   dispatch:ActionDispatch<[action: Action]>
-  getChats:()=>void;
+  // getChats:()=>void;
 }
 
 
@@ -65,27 +65,27 @@ export default function Store({children}:{children:ReactNode}){
 
   const [state, dispatch] = useReducer(reducer, {sidebarList:[], messages:[]});
   useEffect(()=>{
-    getChats();
+    // getChats();
   }, [])
 
-  async function getChats(){
-    try {
-      const chatList:ChatData[] = await getChatList();
-      dispatch({
-        type:"sidebar",
-        data:chatList,
-      });
-    } catch(err) {
-
-      console.log(err);
-    }
-  }
+  // async function getChats(){
+  //   try {
+  //     const chatList:ChatData[] = await getChatList();
+  //     dispatch({
+  //       type:"sidebar",
+  //       data:chatList,
+  //     });
+  //   } catch(err) {
+  //
+  //     console.log(err);
+  //   }
+  // }
   return <StoreContext.Provider 
     value={{
       sidebarList:state.sidebarList,
       messages:state.messages,
       dispatch:dispatch,
-      getChats:getChats,
+      // getChats:getChats,
     }}
   >
     {children}

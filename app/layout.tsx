@@ -31,7 +31,7 @@ export default async function RootLayout({children}:Readonly<{children:ReactNode
   const theme = cookie.get("theme")??{value:"light"}
   return(
     <html lang="en" className={`theme-${theme.value}`}>
-      <ReactScan/>
+      {/* <ReactScan/> */}
       <body >
         <ThemeProvider>
           <Store>
