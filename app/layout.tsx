@@ -1,9 +1,8 @@
 import { Metadata } from "next";
 import { ReactNode } from "react";
 import "./globals.css";
-import { ReactScan } from "@/components/ReactScan";
+// import { ReactScan } from "@/components/ReactScan";
 import ThemeProvider from "./ThemeProvider";
-import Store from "./Store";
 import { cookies } from "next/headers";
 // import Snackbar from "@/components/Snackbar";
 
@@ -34,10 +33,8 @@ export default async function RootLayout({children}:Readonly<{children:ReactNode
       {/* <ReactScan/> */}
       <body >
         <ThemeProvider>
-          <Store>
             {children}
             {/* <Snackbar/> */}
-          </Store>
         </ThemeProvider>
       </body>
     </html>

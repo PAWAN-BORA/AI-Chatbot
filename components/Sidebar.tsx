@@ -1,17 +1,18 @@
 "use client"
-import { ChatData, StoreContext } from "@/app/Store"
+import { ChatData } from "@/app/Store_old"
 import { useSearchParams } from "next/navigation";
-import { useContext, useEffect, useRef, useState } from "react"
+import { useEffect, useRef, useState } from "react"
 import Modal from "./Modal";
-import { deleteChat, updateChat } from "@/utils/chatFetch";
-import useStore from "@/store/store";
+import { deleteChat, getChatMsg, updateChat } from "@/utils/chatFetch";
+import useStore, { AnsData, ChatMsg } from "@/store/store";
 
 
-export default function Sidebar() {
+export default function Sidebar({chatId}:Readonly<{chatId:string|undefined}>) {
 
   // const {getChats} = useContext(StoreContext)!;
   const sidebarList = useStore(state=>state.chatList);
   const updateChatList = useStore(state=>state.updateChatList);
+  const resetData = useStore(state=>state.resetData);
   const searchParams = useSearchParams();
   const [delObj, setDelObj] = useState<{status:boolean, chat:null|ChatData}>({
     status:false,
@@ -19,12 +20,32 @@ export default function Sidebar() {
   });
   const [deleting, setDeleting] = useState(false);
 
+  useEffect(()=>{
+    async function getChatList(){
+      if(chatId==null)return;
+      try {
+        const msgList:ChatMsg[] = await getChatMsg(chatId);
+        const quesList = [], ansList:AnsData={};
+        for(const chat of msgList){
+          const quesId = chat.ques.id;
+          quesList.push(chat.ques);
+          ansList[quesId] = chat.ans;
+        }
+        resetData(quesList, ansList);
+      } catch(err) {
+        console.log(err);
+      }
+    }
+    getChatList();
+  }, [chatId, resetData])
   function changeChat(chat:ChatData|null){
     if(chat==null){
       window.history.pushState(null, "", "/");
+      resetData();
       return;
     }
     window.history.pushState(null, "", "?chat_id="+chat.chatId)
+    chatMsgList(chat.chatId);
   }
 
   function handleDelete(chat:ChatData){
@@ -32,6 +53,20 @@ export default function Sidebar() {
       return {...prev, status:true, chat:chat}
     });
 
+  }
+  async function chatMsgList(chatId:string){
+    try {
+      const msgList:ChatMsg[] = await getChatMsg(chatId);
+      const quesList = [], ansList:AnsData={};
+      for(const chat of msgList){
+        const quesId = chat.ques.id;
+        quesList.push(chat.ques);
+        ansList[quesId] = chat.ans;
+      }
+      resetData(quesList, ansList);
+    } catch(err) {
+      console.log(err);
+    }
   }
   async function deleteChatData(chat:ChatData|null){
     if(chat==null) return;

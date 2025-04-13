@@ -1,26 +1,21 @@
-"use client";
 import Header from "@/components/Header";
 
 
 import Sidebar from "@/components/Sidebar";
 import Chatbox from "@/components/Chatbox";
 import Searchbar from "@/components/Searchbar";
-// import dynamic from "next/dynamic";
-// const Chatbox = dynamic(() => import("../components/Chatbox"), { ssr: false })
-
-export default function Home(){
-  // let sideList:string[] = []
-  // let error = null;
-  // try {
-  //   let [sideList] = await pool.execute("SELECT * from chat WHERE user_id = ?", [1]);
-  // } catch(err) {
-  //   console.log(err);
-  //   error = "Error in Db"
-  // }
+type Props = {
+  searchParams: Promise<{
+    [key: string]: string | string[] | undefined;
+  }>;
+}
+export default async function Home({searchParams}:Props){
+  const params = await searchParams;
+  const chatId = typeof params.chat_id=="string"?params.chat_id:undefined;
 
   return(
     <div className="grid grid-cols-[256px_1fr] h-screen">
-      <Sidebar />
+      <Sidebar chatId={chatId}/>
       <div className="flex flex-col flex-1 pb-2 h-screen">
         <Header />
         <Chatbox/>
