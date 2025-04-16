@@ -1,11 +1,13 @@
 "use client";
 import { ThemeContext } from "@/app/ThemeProvider"
+import { useRouter } from "next/navigation";
 import { MouseEvent, useContext, useEffect, useState } from "react"
 
 export default function Header(){
 
   const {theme, setTheme} = useContext(ThemeContext)!;
   const [isOpen, setIsOpen] = useState(false);
+  const router = useRouter();
   function toggleDropDown(e:MouseEvent<HTMLButtonElement>){
     e.preventDefault();
     e.stopPropagation();
@@ -21,6 +23,13 @@ export default function Header(){
       window.removeEventListener('click', clickOutside)
     }
   }, [])
+
+  async function handleLogout(){
+    const res = await fetch("/api/logout");
+    if(res.ok){
+      router.push("/login");
+    }
+  }
   return(
     <header className="flex items-center justify-between bg-primarygray px-4 py-1 shadow-md">
       {/* Left Side - Title */}
@@ -54,8 +63,8 @@ export default function Header(){
             <button className="w-full text-left px-4 py-2 hover:bg-primaryyellow" onClick={()=>{setTheme(theme=="dark"?"light":"dark")}}>
               Toggle Theme
             </button>
-            <button className="w-full text-left px-4 py-2 hover:bg-primaryyellow">
-              Logout / Login
+            <button className="w-full text-left px-4 py-2 hover:bg-primaryyellow" onClick={handleLogout}>
+              Logout 
             </button>
           </div>
         }

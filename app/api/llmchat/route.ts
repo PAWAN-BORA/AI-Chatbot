@@ -6,12 +6,12 @@ import { getLimetedChatMsg, newChat } from "@/model/chat";
 import { StringWithAutocomplete } from "@langchain/core/utils/types";
 // const modelName = "deepseek-r1:1.5b";
 // const modelName = "deepseek-r1:8b";
-const modelName = "llama3.2:3b";
+// const modelName = "llama3.2:3b";
 // const modelName = "llama3.1";
 
 const llm = new ChatOllama({
-  baseUrl: "http://172.24.64.1:11434",
-  model: modelName, // Default value
+  baseUrl:process.env.AI_BASE_URL,
+  model: process.env.AI_MODEL_NAME, // Default value
   temperature: 0,
   maxRetries: 2,
   // disableStreaming:true,

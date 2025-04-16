@@ -1,10 +1,9 @@
 "use client"
-import { ChatData } from "@/app/Store_old"
 import { useSearchParams } from "next/navigation";
 import { useEffect, useRef, useState } from "react"
 import Modal from "./Modal";
 import { deleteChat, getChatMsg, updateChat } from "@/utils/chatFetch";
-import useStore, { AnsData, ChatMsg } from "@/store/store";
+import useStore, { AnsData, ChatData, ChatMsg } from "@/store/store";
 
 
 export default function Sidebar({chatId}:Readonly<{chatId:string|undefined}>) {
