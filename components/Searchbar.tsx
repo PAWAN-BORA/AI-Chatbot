@@ -5,7 +5,7 @@ import { saveChatMsg } from "@/utils/chatFetch";
 import { getStream } from "@/utils/getStream";
 import { getRandomId, streamAsyncIterator } from "@/utils/utils";
 import { useSearchParams } from "next/navigation";
-import { FormEvent, useState } from "react";
+import { FormEvent, KeyboardEventHandler, ReactEventHandler, TextareaHTMLAttributes, useEffect, useRef, useState } from "react";
 
 export default function Searchbar() {
 
@@ -15,7 +15,18 @@ export default function Searchbar() {
   const updateChatList = useStore(state=>state.updateChatList);
   const setMessage = useStore(state=>state.setMessage);
   const searchParams = useSearchParams();
+  const textAreaRef = useRef<HTMLTextAreaElement>(null);
 
+  useEffect(()=>{
+    if(textAreaRef.current!=null){
+      const textArea = textAreaRef.current;
+      textArea.style.height = "auto";
+      textArea.style.height = textArea.scrollHeight + "px";
+      if(textArea.clientHeight > 150){
+        textArea.style.height = "150px";
+      } 
+    }
+  }, [inputVal])
   const handleSubmit = (e:FormEvent)=>{
     e.preventDefault();
     const msg:Message = {msg:inputVal, id:getRandomId().toString()}
@@ -60,15 +71,28 @@ export default function Searchbar() {
     saveChatMsg(msgPayload);
   }
 
+   const handleKeyDown = (e:React.KeyboardEvent<HTMLTextAreaElement>) => {
+    console.log(e.key);
+    if (e.key === 'Enter') {
+      if (e.shiftKey) {
+        return;
+      } else {
+        handleSubmit(e);
+      }
+    }
+  };
   return(
    <div className="flex justify-center">
       <form className="min-w-96 flex gap-2 p-4 border border-gray-400 rounded-xl items-center" onSubmit={handleSubmit}>
-        <input 
-          className="w-full p-2 border-none outline-none bg-transparent focus:ring-0"
-          type="text" 
+        <textarea 
+          className="w-full border-none outline-none bg-transparent focus:ring-0 resize-none"
+          cols={60}
+          // rows={maxRows}
+          ref={textAreaRef}
           placeholder="Ask anything" 
           value={inputVal}
           onChange={(e)=>{setInputVal(e.target.value)}}
+          onKeyDown={handleKeyDown}
         />
         <button className="cursor-pointer"  type="submit">
           <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-6">

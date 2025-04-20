@@ -64,7 +64,7 @@ const workflow = new StateGraph(StateAnnotaion)
 // const memory = new MemorySaver();
 const app = workflow.compile();
 
-export async function llmChat(req:NextRequest){
+async function llmChat(req:NextRequest){
   const chat = await Chat.create();
   const data = await req.json();
   let chatId = data.chatId;
