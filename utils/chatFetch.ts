@@ -1,3 +1,4 @@
+import { customFetch } from "./utils";
 
 type ChatMsgPayload = {
   chatId:number,
@@ -7,7 +8,7 @@ type ChatMsgPayload = {
 export async function saveChatMsg(paylaod:ChatMsgPayload){
   const url = "/api/addChatMsg";
   try {
-    const res = await fetch(url, {
+    const res = await customFetch(url, {
       method:"POST",
       body:JSON.stringify(paylaod),
     });
@@ -25,7 +26,7 @@ export async function saveChatMsg(paylaod:ChatMsgPayload){
 export async function getChatList(){
   const url = "/api/chatList";
   try {
-    const res = await fetch(url);
+    const res = await customFetch(url);
     if(res.ok){
       return await res.json();
     }
@@ -39,7 +40,7 @@ export async function getChatList(){
 export async function getChatMsg(chatId:string){
   const url = "/api/chatMsg?chat_id="+chatId;
   try {
-    const res = await fetch(url);
+    const res = await customFetch(url);
     if(res.ok){
       return await res.json();
     }
@@ -53,7 +54,7 @@ export async function getChatMsg(chatId:string){
 export async function deleteChat(chatId:string){
   const url = "/api/chat";
   try {
-    const res = await fetch(url, {
+    const res = await customFetch(url, {
       method:"DELETE",
       body:JSON.stringify({chatId:chatId})
     });
@@ -75,7 +76,7 @@ type UpdateChatPayload = {
 export async function updateChat(payload:UpdateChatPayload){
   const url = "/api/chat";
   try {
-    const res = await fetch(url, {
+    const res = await customFetch(url, {
       method:"PUT",
       body:JSON.stringify(payload)
     });

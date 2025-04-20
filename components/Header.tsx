@@ -1,5 +1,6 @@
 "use client";
 import { ThemeContext } from "@/app/ThemeProvider"
+import { customFetch } from "@/utils/utils";
 import { useRouter } from "next/navigation";
 import { MouseEvent, useContext, useEffect, useState } from "react"
 
@@ -25,7 +26,7 @@ export default function Header(){
   }, [])
 
   async function handleLogout(){
-    const res = await fetch("/api/logout");
+    const res = await customFetch("/api/logout");
     if(res.ok){
       router.push("/login");
     }

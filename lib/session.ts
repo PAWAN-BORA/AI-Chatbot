@@ -1,11 +1,10 @@
+import 'server-only';
 import { SignJWT, jwtVerify } from "jose";
 import { cookies } from 'next/headers'
 
 const key = new TextEncoder().encode("test123");
 
-type Payload = {
-  [key:string]:string,
-};
+type Payload = Record<string, string|number>;
 const algorithum = "HS256";
 function encrypt(payload:Payload){
   return new SignJWT(payload)

@@ -1,3 +1,4 @@
+import { customFetch } from "./utils";
 
 
 type Paylaod = {
@@ -8,7 +9,7 @@ export async function getStream(paylaod:Paylaod){
 
   const url = "/api/llmchat";
   try {
-    const res = await fetch(url, {
+    const res = await customFetch(url, {
       method:"POST",
       body:JSON.stringify(paylaod),
     });

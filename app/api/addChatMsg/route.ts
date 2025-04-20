@@ -1,22 +1,17 @@
-import { addChatMsg } from "@/model/chat";
+import { ValidationError } from "@/lib/errors";
+import { Chat } from "@/model/chat";
+import { withErrorHandler } from "@/utils/utils";
 import { NextRequest, NextResponse } from "next/server";
 
-
-
-export async function POST(req:NextRequest){
-
+async function addMsg(req:NextRequest){
+  const chat = await Chat.create();
   const data = await req.json();
   if(data.chatId==undefined || data.ques==undefined || data.ans==undefined){
-    return NextResponse.json({msg:"failed"}, {status:400})
+    throw new ValidationError();
   }
-
-  try {
-    const msgId = await addChatMsg(data.chatId, data.ques, data.ans);
-    return NextResponse.json({msg:"successfull", id:msgId}, {status:200})
-  } catch(err) {
-    console.log(err);
-    return NextResponse.json({msg:"failed"}, {status:503})
-  }
-
+  const msgId = await chat.addChatMsg(data.chatId, data.ques, data.ans);
+  return NextResponse.json({msg:"successfull", id:msgId}, {status:200})
 
 }
+
+export const POST = withErrorHandler(addMsg)

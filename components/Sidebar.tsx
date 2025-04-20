@@ -25,6 +25,12 @@ export default function Sidebar({chatId}:Readonly<{chatId:string|undefined}>) {
       try {
         const msgList:ChatMsg[] = await getChatMsg(chatId);
         const quesList = [], ansList:AnsData={};
+        console.log(msgList, 'msglist')
+        if(msgList.length==0){
+          window.history.pushState(null, "", "/");
+          resetData();
+          return;
+        }
         for(const chat of msgList){
           const quesId = chat.ques.id;
           quesList.push(chat.ques);

@@ -74,7 +74,7 @@ export default function Login(){
               placeholder="Enter email"
               value={username}
               onChange={(e)=>{setUsername(e.target.value)}}
-              className="w-full px-4 py-2 border bg-background border-foreground rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-4 py-2 border bg-white text-black border-foreground rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
           </div>
           <div>
@@ -84,7 +84,7 @@ export default function Login(){
               value={password}
               onChange={(e)=>{setPassword(e.target.value)}}
               placeholder="Enter password"
-              className="w-full px-4 py-2 bg-background border border-foreground rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-4 py-2 bg-white text-black border border-foreground rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
           </div>
           <button
