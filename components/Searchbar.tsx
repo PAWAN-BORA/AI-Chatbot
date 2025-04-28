@@ -5,7 +5,7 @@ import { saveChatMsg } from "@/utils/chatFetch";
 import { getStream } from "@/utils/getStream";
 import { getRandomId, streamAsyncIterator } from "@/utils/utils";
 import { useSearchParams } from "next/navigation";
-import { FormEvent, KeyboardEventHandler, ReactEventHandler, TextareaHTMLAttributes, useEffect, useRef, useState } from "react";
+import { FormEvent, useEffect, useRef, useState } from "react";
 
 export default function Searchbar() {
 

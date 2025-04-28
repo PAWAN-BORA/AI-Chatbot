@@ -21,6 +21,7 @@ const llm = new ChatOllama({
 });
 
 
+
 type DBMessage = {role:StringWithAutocomplete<MessageType>, content:string }
 const StateAnnotaion = Annotation.Root({
   dbMessages:Annotation<DBMessage[]>,
