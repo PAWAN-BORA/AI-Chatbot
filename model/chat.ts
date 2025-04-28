@@ -30,7 +30,7 @@ export class Chat {
     return this.session;
   }
 
-  public async newChat(userId:string, title:string){
+  public async newChat(userId:number, title:string){
     const [res] = await pool.execute("INSERT INTO chat (user_id, title) VALUES (?, ?)", [userId, title]);
     return (res as ChatResult).insertId ;
   }

@@ -6,6 +6,7 @@
     "dev": "next lint & next dev --turbopack",
     "build": "next build",
     "start": "next start",
+    "migration":"node --env-file=.env migration/migration.js",
     "lint": "next lint"
   },
   "dependencies": {

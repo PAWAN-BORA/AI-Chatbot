@@ -71,7 +71,8 @@ async function llmChat(req:NextRequest){
   let chatId = data.chatId;
   if(chatId==null){
     try {
-      chatId = await chat.newChat(data.userId, data.ques.substring(0, 20));
+      const {userId} = chat.getSession();
+      chatId = await chat.newChat(userId, data.ques.substring(0, 20));
     } catch(err) {
       console.log(err);
       throw new DatabaseError("failed to create new chat.");

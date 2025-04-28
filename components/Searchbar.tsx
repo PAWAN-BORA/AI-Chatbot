@@ -40,7 +40,6 @@ export default function Searchbar() {
     const payload = {
       ques:msg.msg,
       chatId:chatId,
-      userId:1,
     }
     const reader = await getStream(payload); 
     setAnsLoading(false);
