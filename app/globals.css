@@ -19,6 +19,8 @@
   --foreground: #171717;
   --primarygray:#ececec;
   --primaryyellow:#eff6ff;
+  --menubg:#D9D8DD;
+  --menufg:#F2F2F2;
   --success:green;
   --error:red;
   --codebg:rgb(250, 250, 250);
@@ -28,6 +30,8 @@
   --foreground: #ededed;
   --primarygray:#2c2c2c;
   --primaryyellow:#0f172a;
+  --menubg:#5B5B5B;
+  --menufg:#242424;
   --success:green;
   --error:red;
   --codebg:rgb(40, 44, 52);

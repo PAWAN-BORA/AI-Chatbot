@@ -16,6 +16,8 @@ export default {
         codebg: "var(--codebg)",
         success: "var(--success)",
         error: "var(--error)",
+        menubg: "var(--menubg)",
+        menufg: "var(--menufg)",
       },
     },
   },
