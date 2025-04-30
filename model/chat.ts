@@ -51,7 +51,8 @@ export class Chat {
   }
 
   public async getChatMsg(chatId:number){
-    const [res] = await pool.execute("SELECT * from chat_msg where chat_id=?", [chatId]);
+    const {userId} = this.session;
+    const [res] = await pool.execute("SELECT chat_msg.* from chat_msg LEFT JOIN chat on chat_msg.chat_id=chat.chat_id where chat_msg.chat_id=? AND chat.user_id=?", [chatId, userId]);
     return (res as {[key:string]:string}[]).map((item)=>{
       let ques = null;
       try{

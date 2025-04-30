@@ -12,3 +12,8 @@ export async function getUser(username:string, password:string){
   return (res as UserData[]);
 
 }
+export async function addUser(name:string, email:string, password:string){
+  const [res] = await pool.execute("INSERT INTO users (name, email, password) VALUES (?, ?, ?)", [name, email, password]);
+  return (res as {insertId:number}).insertId;
+
+}

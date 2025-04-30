@@ -2,6 +2,7 @@
 
 import ErrorBox from "@/components/common/ErrorBox";
 import Loader from "@/components/common/Loader";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { FormEvent, useState } from "react";
 
@@ -98,6 +99,12 @@ export default function Login(){
             {loading?<Loader size={20}/>:"Login"}
           </button>
         </form>
+        <div className="text-sm text-foreground mt-2 text-right">
+          Not registered yet? 
+          <Link href="/signup" className="text-success hover:underline font-medium ml-1">
+            Sign up
+          </Link>
+        </div>
       </div>
     </div>
   )

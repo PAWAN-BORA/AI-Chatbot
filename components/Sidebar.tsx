@@ -96,7 +96,7 @@ export default function Sidebar({chatId}:Readonly<{chatId:string|undefined}>) {
     }
   }
   return(
-    <div className="h-full overflow-y-auto mx-1">
+    <div className="h-full overflow-y-auto mx-1 border-r border-r-primarygray">
       <div className="flex justify-between gap-2 mt-2 py-2 border-b border-b-primarygray">
         <div>Chat Bot</div>
         <div className="cursor-pointer" onClick={()=>{changeChat(null)}}>
