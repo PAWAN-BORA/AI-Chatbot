@@ -20,6 +20,10 @@ export default function Sidebar({chatId}:Readonly<{chatId:string|undefined}>) {
   const [deleting, setDeleting] = useState(false);
 
   useEffect(()=>{
+    resetData();
+    updateChatList();
+  }, [resetData, updateChatList])
+  useEffect(()=>{
     async function getChatList(){
       if(chatId==null)return;
       try {

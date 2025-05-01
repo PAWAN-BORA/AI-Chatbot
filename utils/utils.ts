@@ -46,7 +46,6 @@ export function streamAsyncIterator(reader:ReadableStreamDefaultReader<Uint8Arra
 
 export async function customFetch(input:RequestInfo, init?:RequestInit){
   return fetch(input, init).then((res)=>{
-    console.log(res, 'this is res...');
     if(res.status==401){
       window.location.href = "/login";
       throw new Error("Unauthorized")

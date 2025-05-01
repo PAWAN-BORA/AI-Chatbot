@@ -41,7 +41,7 @@ export default function Header(){
       {/* Right Side - Dropdown */}
       <div className="relative">
         <button 
-          className="p-2 rounded-full bg-primaryyellow hover:bg-gray-700"
+          className="p-2 rounded-full bg-primaryyellow hover:bg-menubg"
           onClick={toggleDropDown}
         >
           <svg

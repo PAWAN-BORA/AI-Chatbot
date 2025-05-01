@@ -71,7 +71,6 @@ export default function Searchbar() {
   }
 
    const handleKeyDown = (e:React.KeyboardEvent<HTMLTextAreaElement>) => {
-    console.log(e.key);
     if (e.key === 'Enter') {
       if (e.shiftKey) {
         return;

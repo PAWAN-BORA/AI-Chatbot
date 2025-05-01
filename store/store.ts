@@ -71,12 +71,5 @@ const useStore = create<StoreValue>((set)=>({
   },
 }));
 
-if(typeof window != "undefined"){
-  useStore.getState().updateChatList();
-}
-
-// const params = new URLSearchParams(window.location.search);
-// console.log(params.get("chat_id"))
-// getChatMsg()
 
 export default useStore;
