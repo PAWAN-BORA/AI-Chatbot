@@ -69,7 +69,7 @@ export default function Login(){
 
         <form className="space-y-5" onSubmit={handleLogin}>
           <div>
-            <label className="block mb-1 text-foreground">Username</label>
+            <label className="block mb-1 text-foreground">Username (email)</label>
             <input
               type="text"
               placeholder="Enter email"
