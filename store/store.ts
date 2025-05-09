@@ -1,4 +1,6 @@
-import { getChatList } from "@/utils/chatFetch";
+import { getChatList, getRagChatList, saveChatMsg } from "@/utils/chatFetch";
+import { getStream } from "@/utils/getStream";
+import { streamAsyncIterator } from "@/utils/utils";
 import { create } from "zustand";
 
 
@@ -20,19 +22,23 @@ export type ChatMsg = {
 export type AnsData = {[key:string]:string}
 type StoreValue = {
   chatList:ChatData[],
+  ragChatList:ChatData[],
   messages:Message[],
   answers:AnsData,
   loadingAns:boolean,
   updateChatList:()=>void,
+  updateRagChatList:()=>void,
   setMessage:(msg:Message)=>void,
   updateAnswer:(msgId:string, chunk:string)=>void,
+  getChatAnswer:(msg:Message, chatId:string|null)=>void,
   resetData:(messages?:Message[], answers?:AnsData)=>void,
   setAnsLoading:(status:boolean)=>void,
 }
 
 
-const useStore = create<StoreValue>((set)=>({
+const useStore = create<StoreValue>((set, get)=>({
   chatList:[],
+  ragChatList:[],
   messages:[],
   answers:{},
   loadingAns:false,
@@ -40,6 +46,15 @@ const useStore = create<StoreValue>((set)=>({
     try {
       const chatList:ChatData[] = await getChatList();
       set({chatList:chatList})
+    } catch(err) {
+      console.log(err);
+      // set({sidebarList:[]})
+    }
+  },
+  updateRagChatList:async ()=>{
+    try {
+      const chatList:ChatData[] = await getRagChatList();
+      set({ragChatList:chatList})
     } catch(err) {
       console.log(err);
       // set({sidebarList:[]})
@@ -62,6 +77,48 @@ const useStore = create<StoreValue>((set)=>({
         return {answers:{...answers, [msgId]:chunk}}
       }
     });
+  },
+  getChatAnswer:async (msg:Message, chatId:string|null)=>{
+    set({loadingAns:false})
+    const {setAnsLoading, updateAnswer, updateChatList} = get();
+    setAnsLoading(true);
+    const payload = {
+      ques:msg.msg,
+      chatId:chatId,
+    };
+    try {
+      const reader = await getStream(payload); 
+      setAnsLoading(false);
+      let accumulatedData = "";
+      for await (const chunk of streamAsyncIterator(reader)){
+        if(chunk.type=="head"){
+          console.log(chunk, chatId, 'this is head.......');
+          if(chatId!==chunk.chatId){
+            chatId = chunk.chatId ?? "0";
+            updateChatList();
+            window.history.pushState(null, "", "?chat_id="+chunk.chatId)
+            continue;
+          }
+        }
+        accumulatedData += chunk.content ?? "";
+        updateAnswer(msg.id, chunk.content??"");
+
+      }
+
+      const msgChatId = Number(chatId) ?? 0;
+      if(msgChatId==0){
+        return;
+      }
+      const msgPayload = {
+        chatId:msgChatId,
+        ques:JSON.stringify(msg),
+        ans:accumulatedData
+      }
+      saveChatMsg(msgPayload);
+    } catch {
+      setAnsLoading(false);
+    }
+
   },
   resetData:(messages=[], answers={})=>{
     set({messages:messages, answers:answers})

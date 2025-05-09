@@ -37,6 +37,21 @@ export async function getChatList(){
     throw new Error('Error Occured!');
   }
 }
+export async function getRagChatList(){
+  return [];
+  const url = "/api/chatList";
+  try {
+    const res = await customFetch(url);
+    if(res.ok){
+      return await res.json();
+    }
+    const json = await res.json();
+    throw new Error(json.msg??"");
+  } catch(error) {
+    console.log(error);
+    throw new Error('Error Occured!');
+  }
+}
 export async function getChatMsg(chatId:string){
   const url = "/api/chatMsg?chat_id="+chatId;
   try {

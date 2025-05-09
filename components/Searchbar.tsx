@@ -1,19 +1,14 @@
 "use client"
-
 import useStore, { Message } from "@/store/store";
-import { saveChatMsg } from "@/utils/chatFetch";
-import { getStream } from "@/utils/getStream";
-import { getRandomId, streamAsyncIterator } from "@/utils/utils";
+import { getRandomId } from "@/utils/utils";
 import { useSearchParams } from "next/navigation";
 import { FormEvent, useEffect, useRef, useState } from "react";
 
 export default function Searchbar() {
 
-  const [inputVal, setInputVal] = useState("");
-  const updateAnswer = useStore(state=>state.updateAnswer);
-  const setAnsLoading = useStore(state=>state.setAnsLoading);
-  const updateChatList = useStore(state=>state.updateChatList);
+  const getChatAnswer = useStore(state=>state.getChatAnswer);
   const setMessage = useStore(state=>state.setMessage);
+  const [inputVal, setInputVal] = useState("");
   const searchParams = useSearchParams();
   const textAreaRef = useRef<HTMLTextAreaElement>(null);
 
@@ -30,51 +25,12 @@ export default function Searchbar() {
   const handleSubmit = (e:FormEvent)=>{
     e.preventDefault();
     const msg:Message = {msg:inputVal, id:getRandomId().toString()}
-    setMessage(msg);
     setInputVal("");
-    getAnswer(msg);
+    const chatId = searchParams.get("chat_id");
+    setMessage(msg);
+    getChatAnswer(msg, chatId);
   }
-  async function getAnswer(msg:Message){
-    let chatId = searchParams.get("chat_id");
-    setAnsLoading(true);
-    const payload = {
-      ques:msg.msg,
-      chatId:chatId,
-    }
-
-    try {
-      const reader = await getStream(payload); 
-      setAnsLoading(false);
-      let accumulatedData = "";
-      for await (const chunk of streamAsyncIterator(reader)){
-        if(chunk.type=="head"){
-          if(chatId!==chunk.chatId){
-            chatId = chunk.chatId ?? "0";
-            updateChatList();
-            window.history.pushState(null, "", "?chat_id="+chunk.chatId)
-            continue;
-          }
-        }
-        accumulatedData += chunk.content ?? "";
-        updateAnswer(msg.id, chunk.content??"");
-      };
-
-      const msgChatId = Number(chatId) ?? 0;
-      if(msgChatId==0){
-        return;
-      }
-      const msgPayload = {
-        chatId:msgChatId,
-        ques:JSON.stringify(msg),
-        ans:accumulatedData
-      }
-
-      saveChatMsg(msgPayload);
-    } catch(err) {
-      console.log(err)
-      setAnsLoading(false);
-    } 
-  }
+  
 
    const handleKeyDown = (e:React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.key === 'Enter') {
