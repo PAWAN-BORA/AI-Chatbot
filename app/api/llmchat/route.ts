@@ -1,25 +1,28 @@
 import { NextRequest, NextResponse } from "next/server";
-import {ChatOllama} from "@langchain/ollama";
+// import {ChatOllama} from "@langchain/ollama";
 import {START, END, StateGraph, Annotation} from "@langchain/langgraph";
 import { MessageType } from "@langchain/core/messages";
 import { StringWithAutocomplete } from "@langchain/core/utils/types";
 import { Chat } from "@/model/chat";
 import { withErrorHandler } from "@/utils/utils";
 import { DatabaseError } from "@/lib/errors";
+import getLlmModel from "@/lib/llmModel";
 // const modelName = "deepseek-r1:1.5b";
 // const modelName = "deepseek-r1:8b";
 // const modelName = "llama3.2:3b";
 // const modelName = "llama3.1";
 
-const llm = new ChatOllama({
-  baseUrl:process.env.AI_BASE_URL,
-  model: process.env.AI_MODEL_NAME, // Default value
-  temperature: 0,
-  maxRetries: 2,
-  // disableStreaming:true,
-  // other params...
-});
+// const llm = new ChatOllama({
+//   baseUrl:process.env.AI_BASE_URL,
+//   model: process.env.AI_MODEL_NAME, // Default value
+//   temperature: 0,
+//   maxRetries: 2,
+//   // disableStreaming:true,
+//   // other params...
+// });
 
+const llm = getLlmModel();
+console.log(llm)
 
 
 type DBMessage = {role:StringWithAutocomplete<MessageType>, content:string }

@@ -41,33 +41,39 @@ export default function Searchbar() {
       ques:msg.msg,
       chatId:chatId,
     }
-    const reader = await getStream(payload); 
-    setAnsLoading(false);
-    let accumulatedData = "";
-    for await (const chunk of streamAsyncIterator(reader)){
-      if(chunk.type=="head"){
-        if(chatId!==chunk.chatId){
-          chatId = chunk.chatId ?? "0";
-          updateChatList();
-          window.history.pushState(null, "", "?chat_id="+chunk.chatId)
-          continue;
+
+    try {
+      const reader = await getStream(payload); 
+      setAnsLoading(false);
+      let accumulatedData = "";
+      for await (const chunk of streamAsyncIterator(reader)){
+        if(chunk.type=="head"){
+          if(chatId!==chunk.chatId){
+            chatId = chunk.chatId ?? "0";
+            updateChatList();
+            window.history.pushState(null, "", "?chat_id="+chunk.chatId)
+            continue;
+          }
         }
+        accumulatedData += chunk.content ?? "";
+        updateAnswer(msg.id, chunk.content??"");
+      };
+
+      const msgChatId = Number(chatId) ?? 0;
+      if(msgChatId==0){
+        return;
       }
-      accumulatedData += chunk.content ?? "";
-      updateAnswer(msg.id, chunk.content??"");
-    };
+      const msgPayload = {
+        chatId:msgChatId,
+        ques:JSON.stringify(msg),
+        ans:accumulatedData
+      }
 
-    const msgChatId = Number(chatId) ?? 0;
-    if(msgChatId==0){
-      return;
-    }
-    const msgPayload = {
-      chatId:msgChatId,
-      ques:JSON.stringify(msg),
-      ans:accumulatedData
-    }
-
-    saveChatMsg(msgPayload);
+      saveChatMsg(msgPayload);
+    } catch(err) {
+      console.log(err)
+      setAnsLoading(false);
+    } 
   }
 
    const handleKeyDown = (e:React.KeyboardEvent<HTMLTextAreaElement>) => {
