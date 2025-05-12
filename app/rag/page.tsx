@@ -1,22 +1,25 @@
-'use client';
-
 import Chatbox from "@/components/Chatbox";
+import ChatRagSearchBox from "@/components/ChatRagSearchBox";
 import Header from "@/components/Header";
-import Searchbar from "@/components/Searchbar";
 import RagSidebar from "@/components/sidebar/RagSidebar";
 
 
-export default function Rag(){
-
-
+type Props = {
+  searchParams: Promise<{
+    [key: string]: string | string[] | undefined;
+  }>;
+}
+export default async function Rag({searchParams}:Props){
+  const params = await searchParams;
+  const chatId = typeof params.chat_id=="string"?params.chat_id:undefined;
   return(
     <div className="grid grid-cols-[256px_1fr] h-screen">
-      <RagSidebar chatId={undefined}/>
+      <RagSidebar chatId={chatId}/>
 
       <div className="flex flex-col flex-1 pb-2 h-screen">
         <Header />
         <Chatbox />
-        <Searchbar/>
+        <ChatRagSearchBox/>
       </div>
     </div>
   )

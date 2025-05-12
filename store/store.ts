@@ -1,5 +1,5 @@
 import { getChatList, getRagChatList, saveChatMsg } from "@/utils/chatFetch";
-import { getStream } from "@/utils/getStream";
+import { getRagStream, getStream } from "@/utils/getStream";
 import { streamAsyncIterator } from "@/utils/utils";
 import { create } from "zustand";
 
@@ -31,6 +31,7 @@ type StoreValue = {
   setMessage:(msg:Message)=>void,
   updateAnswer:(msgId:string, chunk:string)=>void,
   getChatAnswer:(msg:Message, chatId:string|null)=>void,
+  getRagChatAnswer:(msg:Message, chatId:string|null)=>void,
   resetData:(messages?:Message[], answers?:AnsData)=>void,
   setAnsLoading:(status:boolean)=>void,
 }
@@ -44,7 +45,7 @@ const useStore = create<StoreValue>((set, get)=>({
   loadingAns:false,
   updateChatList:async ()=>{
     try {
-      const chatList:ChatData[] = await getChatList();
+      const chatList:ChatData[] = await getChatList("/api/chatList");
       set({chatList:chatList})
     } catch(err) {
       console.log(err);
@@ -53,7 +54,7 @@ const useStore = create<StoreValue>((set, get)=>({
   },
   updateRagChatList:async ()=>{
     try {
-      const chatList:ChatData[] = await getRagChatList();
+      const chatList:ChatData[] = await getChatList("/api/ragChat");
       set({ragChatList:chatList})
     } catch(err) {
       console.log(err);
@@ -87,12 +88,11 @@ const useStore = create<StoreValue>((set, get)=>({
       chatId:chatId,
     };
     try {
-      const reader = await getStream(payload); 
+      const reader = await getStream(payload, "/api/llmchat"); 
       setAnsLoading(false);
       let accumulatedData = "";
       for await (const chunk of streamAsyncIterator(reader)){
         if(chunk.type=="head"){
-          console.log(chunk, chatId, 'this is head.......');
           if(chatId!==chunk.chatId){
             chatId = chunk.chatId ?? "0";
             updateChatList();
@@ -114,7 +114,49 @@ const useStore = create<StoreValue>((set, get)=>({
         ques:JSON.stringify(msg),
         ans:accumulatedData
       }
-      saveChatMsg(msgPayload);
+      saveChatMsg(msgPayload, "/api/addChatMsg");
+    } catch {
+      setAnsLoading(false);
+    }
+
+  },
+  getRagChatAnswer:async (msg:Message, chatId:string|null)=>{
+    set({loadingAns:false})
+    const {setAnsLoading, updateAnswer, updateChatList} = get();
+    setAnsLoading(true);
+    const payload = {
+      ques:msg.msg,
+      chatId:chatId,
+    };
+    try {
+      const reader = await getStream(payload, "/api/llmRagChat"); 
+      setAnsLoading(false);
+      let accumulatedData = "";
+      for await (const chunk of streamAsyncIterator(reader)){
+        if(chunk.type=="head"){
+          if(chatId!==chunk.chatId){
+            chatId = chunk.chatId ?? "0";
+            updateChatList();
+            window.history.pushState(null, "", "?chat_id="+chunk.chatId)
+            continue;
+          }
+        }
+        accumulatedData += chunk.content ?? "";
+        updateAnswer(msg.id, chunk.content??"");
+
+      }
+
+      const msgChatId = Number(chatId) ?? 0;
+      if(msgChatId==0){
+        return;
+      }
+      console.log(accumulatedData);
+      const msgPayload = {
+        chatId:msgChatId,
+        ques:JSON.stringify(msg),
+        ans:accumulatedData
+      }
+      saveChatMsg(msgPayload, "/api/ragMsg");
     } catch {
       setAnsLoading(false);
     }

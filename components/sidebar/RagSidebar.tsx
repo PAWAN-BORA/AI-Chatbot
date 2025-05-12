@@ -1,8 +1,8 @@
 "use client"
 import { useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react"
-import Modal from "@/components/Modal";
-import { deleteChat, getChatMsg } from "@/utils/chatFetch";
+// import Modal from "@/components/Modal";
+import { deleteChat, getChatMsg, getRagChatMsg, updateChat } from "@/utils/chatFetch";
 import useStore, { AnsData, ChatData, ChatMsg } from "@/store/store";
 import ChatNameBox from "./ChatNameBox";
 import SideHead from "./SideHead";
@@ -29,11 +29,11 @@ export default function RagSidebar({chatId}:Readonly<{chatId:string|undefined}>)
     async function getChatList(){
       if(chatId==null)return;
       try {
-        const msgList:ChatMsg[] = await getChatMsg(chatId);
+        const msgList:ChatMsg[] = await getRagChatMsg(chatId);
         const quesList = [], ansList:AnsData={};
         console.log(msgList, 'msglist')
         if(msgList.length==0){
-          window.history.pushState(null, "", "/");
+          window.history.pushState(null, "", "/rag");
           resetData();
           return;
         }
@@ -51,7 +51,7 @@ export default function RagSidebar({chatId}:Readonly<{chatId:string|undefined}>)
   }, [chatId, resetData])
   function changeChat(chat:ChatData|null){
     if(chat==null){
-      window.history.pushState(null, "", "/");
+      window.history.pushState(null, "", "/rag");
       resetData();
       return;
     }
@@ -68,7 +68,7 @@ export default function RagSidebar({chatId}:Readonly<{chatId:string|undefined}>)
   }
   async function chatMsgList(chatId:string){
     try {
-      const msgList:ChatMsg[] = await getChatMsg(chatId);
+      const msgList:ChatMsg[] = await getRagChatMsg(chatId);
       const quesList = [], ansList:AnsData={};
       for(const chat of msgList){
         const quesId = chat.ques.id;
@@ -84,7 +84,7 @@ export default function RagSidebar({chatId}:Readonly<{chatId:string|undefined}>)
     if(chat==null) return;
     setDeleting(true);
     try {
-      await deleteChat(chat.chatId);
+      await deleteChat(chat.chatId, "/api/ragChat");
       setDelObj((prev)=>{
         return {...prev, status:false, chat:null}
       });
@@ -102,13 +102,29 @@ export default function RagSidebar({chatId}:Readonly<{chatId:string|undefined}>)
       setDeleting(false)
     }
   }
+  async function updateTitle(text:string, chat:ChatData){
+    try {
+      const payload = {
+        chatId:chat.chatId,
+        title:text,
+      }
+      const res = await updateChat(payload, "/api/ragChat");
+      console.log(res)
+
+    } catch(err){
+      console.log(err)
+
+      // TODO: show error snackbar.
+    } finally {
+    }
+  }
   return(
     <div className="h-full overflow-y-auto mx-1 border-r border-r-primarygray">
       <SideHead newChat={()=>{changeChat(null)}}/>
       <div className="mt-2">
         {sidebarList.map((item)=>{
           return(
-            <ChatNameBox key={item.chatId} chat={item} changeChat={changeChat} handleDelete={handleDelete}/>
+            <ChatNameBox key={item.chatId} chat={item} changeChat={changeChat} handleDelete={handleDelete} updateTitle={updateTitle}/>
           )
         })}
       </div>

@@ -1,5 +1,4 @@
 import { ChatData } from "@/store/store";
-import { updateChat } from "@/utils/chatFetch";
 import { useSearchParams } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 
@@ -7,8 +6,9 @@ type SideDivProps = {
   chat:ChatData,
   changeChat:(chat:ChatData)=>void,
   handleDelete:(chat:ChatData)=>void,
+  updateTitle:(text:string, chat:ChatData)=>void,
 }
-export default function ChatNameBox({chat, changeChat, handleDelete}:Readonly<SideDivProps>){
+export default function ChatNameBox({chat, changeChat, handleDelete, updateTitle}:Readonly<SideDivProps>){
 
   const searchParams = useSearchParams();
   const chatId = searchParams.get("chat_id");
@@ -36,24 +36,9 @@ export default function ChatNameBox({chat, changeChat, handleDelete}:Readonly<Si
   }
   function handleBlur(){
     setIsEditable(false);
-    updateTitle();
-  }
-  async function updateTitle(){
-    try {
-      const text = divRef.current?.innerText;
-      const payload = {
-        chatId:chat.chatId,
-        title:text ?? "",
-      }
-      const res = await updateChat(payload);
-      console.log(res)
+    const text = divRef.current?.innerText ?? "";
+    updateTitle(text, chat);
 
-    } catch(err){
-      console.log(err)
-
-      // TODO: show error snackbar.
-    } finally {
-    }
   }
   return(
     <div 

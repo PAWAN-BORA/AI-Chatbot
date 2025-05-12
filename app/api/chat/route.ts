@@ -22,8 +22,8 @@ async function updateChat(req:NextRequest){
   if(data.chatId==undefined || isNaN(data.chatId)){
     throw new ValidationError("Invalid Chat id");
   }
-  const updatedId = await chat.updateChatTitle(data.chatId, data.title);
-  return NextResponse.json({msg:`chat updated successfully with chat id ${updatedId}`}, {status:200})
+  await chat.updateChatTitle(data.chatId, data.title);
+  return NextResponse.json({msg:`chat updated successfully`}, {status:200})
 }
 
 export const PUT = withErrorHandler(updateChat);

@@ -5,9 +5,7 @@ type Paylaod = {
   ques:string,
 }
 
-export async function getStream(paylaod:Paylaod){
-
-  const url = "/api/llmchat";
+export async function getStream(paylaod:Paylaod, url:string){
   try {
     const res = await customFetch(url, {
       method:"POST",
@@ -29,5 +27,5 @@ export async function getStream(paylaod:Paylaod){
     throw new Error('Error Occured!');
   }
 
-
 }
+

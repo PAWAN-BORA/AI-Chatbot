@@ -3,7 +3,7 @@ import Modal from "../Modal";
 type ChatDeleteModalProps = {
   isOpen:boolean,
   onClose:()=>void,
-  chatTitle:string,
+  chatTitle:string|undefined,
   deleteChat:()=>void,
   isDisable:boolean,
 }

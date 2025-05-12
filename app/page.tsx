@@ -3,7 +3,7 @@ import Header from "@/components/Header";
 
 import Sidebar from "@/components/sidebar/Sidebar";
 import Chatbox from "@/components/Chatbox";
-import Searchbar from "@/components/Searchbar";
+import ChatSearchBox from "@/components/ChatSearchBox";
 type Props = {
   searchParams: Promise<{
     [key: string]: string | string[] | undefined;
@@ -19,7 +19,7 @@ export default async function Home({searchParams}:Props){
       <div className="flex flex-col flex-1 pb-2 h-screen">
         <Header />
         <Chatbox/>
-        <Searchbar/>
+        <ChatSearchBox/>
       </div>
     </div>
   )

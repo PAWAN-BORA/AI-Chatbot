@@ -1,15 +1,11 @@
-"use client"
-import useStore, { Message } from "@/store/store";
-import { getRandomId } from "@/utils/utils";
-import { useSearchParams } from "next/navigation";
 import { FormEvent, useEffect, useRef, useState } from "react";
 
-export default function Searchbar() {
+type SearchInputProps = {
+  handleMessage:(msg:string)=>void;
+}
+export default function SearchInput({handleMessage}:Readonly<SearchInputProps>) {
 
-  const getChatAnswer = useStore(state=>state.getChatAnswer);
-  const setMessage = useStore(state=>state.setMessage);
   const [inputVal, setInputVal] = useState("");
-  const searchParams = useSearchParams();
   const textAreaRef = useRef<HTMLTextAreaElement>(null);
 
   useEffect(()=>{
@@ -24,11 +20,8 @@ export default function Searchbar() {
   }, [inputVal])
   const handleSubmit = (e:FormEvent)=>{
     e.preventDefault();
-    const msg:Message = {msg:inputVal, id:getRandomId().toString()}
+    handleMessage(inputVal);
     setInputVal("");
-    const chatId = searchParams.get("chat_id");
-    setMessage(msg);
-    getChatAnswer(msg, chatId);
   }
   
 

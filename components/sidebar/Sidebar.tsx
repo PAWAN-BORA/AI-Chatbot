@@ -1,8 +1,7 @@
 "use client"
 import { useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react"
-import Modal from "@/components/Modal";
-import { deleteChat, getChatMsg } from "@/utils/chatFetch";
+import { deleteChat, getChatMsg, updateChat } from "@/utils/chatFetch";
 import useStore, { AnsData, ChatData, ChatMsg } from "@/store/store";
 import ChatNameBox from "./ChatNameBox";
 import SideHead from "./SideHead";
@@ -84,7 +83,7 @@ export default function Sidebar({chatId}:Readonly<{chatId:string|undefined}>) {
     if(chat==null) return;
     setDeleting(true);
     try {
-      await deleteChat(chat.chatId);
+      await deleteChat(chat.chatId, "/api/chat");
       setDelObj((prev)=>{
         return {...prev, status:false, chat:null}
       });
@@ -102,13 +101,29 @@ export default function Sidebar({chatId}:Readonly<{chatId:string|undefined}>) {
       setDeleting(false)
     }
   }
+  async function updateTitle(text:string, chat:ChatData){
+    try {
+      const payload = {
+        chatId:chat.chatId,
+        title:text,
+      }
+      const res = await updateChat(payload, "/api/chat");
+      console.log(res)
+
+    } catch(err){
+      console.log(err)
+
+      // TODO: show error snackbar.
+    } finally {
+    }
+  }
   return(
     <div className="h-full overflow-y-auto mx-1 border-r border-r-primarygray">
       <SideHead newChat={()=>{changeChat(null)}}/>
       <div className="mt-2">
         {sidebarList.map((item)=>{
           return(
-            <ChatNameBox key={item.chatId} chat={item} changeChat={changeChat} handleDelete={handleDelete}/>
+            <ChatNameBox key={item.chatId} chat={item} changeChat={changeChat} handleDelete={handleDelete} updateTitle={updateTitle}/>
           )
         })}
       </div>

@@ -12,17 +12,8 @@ import getLlmModel from "@/lib/llmModel";
 // const modelName = "llama3.2:3b";
 // const modelName = "llama3.1";
 
-// const llm = new ChatOllama({
-//   baseUrl:process.env.AI_BASE_URL,
-//   model: process.env.AI_MODEL_NAME, // Default value
-//   temperature: 0,
-//   maxRetries: 2,
-//   // disableStreaming:true,
-//   // other params...
-// });
 
 const llm = getLlmModel();
-console.log(llm)
 
 
 type DBMessage = {role:StringWithAutocomplete<MessageType>, content:string }
@@ -82,7 +73,6 @@ async function llmChat(req:NextRequest){
     }
   }
   try {
-    const encoder = new TextEncoder();
     const config = {
       configurable: {
         thread_id: chatId,
@@ -93,6 +83,7 @@ async function llmChat(req:NextRequest){
     const readableStream = new ReadableStream({
       async start(controller){
         try{
+          const encoder = new TextEncoder();
           controller.enqueue(`${chatId}##CHATID##`);
           for await (const [chunk] of stream){
             const content = chunk.content;

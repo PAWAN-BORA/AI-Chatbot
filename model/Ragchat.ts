@@ -13,8 +13,10 @@ type ChatData = {
   userId:string,
   title:string,
 }
-export class Chat {
+export class RagChat {
   private session:UserData
+  private chatTable = "rag_chat";
+  private msgTable = "rag_chat_msg";
   private constructor(session:UserData){
     this.session = session;
   }
@@ -23,7 +25,7 @@ export class Chat {
     if(session==null){
       throw new UnauthorizedError();
     }
-    return new Chat(session as UserData)
+    return new RagChat(session as UserData)
   }
 
   public getSession(){
@@ -31,11 +33,11 @@ export class Chat {
   }
 
   public async newChat(userId:number, title:string){
-    const [res] = await pool.execute("INSERT INTO chat (user_id, title) VALUES (?, ?)", [userId, title]);
+    const [res] = await pool.execute(`INSERT INTO ${this.chatTable} (user_id, title) VALUES (?, ?)`, [userId, title]);
     return (res as ChatResult).insertId ;
   }
   public async getChatData(userId:number){
-    const [res] = await pool.execute("SELECT * from chat where user_id=? ORDER BY chat_id DESC", [userId]);
+    const [res] = await pool.execute(`SELECT * from ${this.chatTable} where user_id=? ORDER BY chat_id DESC`, [userId]);
     return (res as {[key:string]:string}[]).map((item)=>{
       return {
         chatId:item.chat_id,
@@ -46,13 +48,14 @@ export class Chat {
   }
 
   public async addChatMsg(chatId:number, ques:string, ans:string){
-    const [res] = await pool.execute("INSERT INTO chat_msg (chat_id, ques, ans) VALUES (?, ?, ?)", [chatId, ques, ans]);
+    const [res] = await pool.execute(`INSERT INTO ${this.msgTable} (chat_id, ques, ans) VALUES (?, ?, ?)`, [chatId, ques, ans]);
     return (res as ChatResult).insertId ;
   }
 
   public async getChatMsg(chatId:number){
     const {userId} = this.session;
-    const [res] = await pool.execute("SELECT chat_msg.* from chat_msg LEFT JOIN chat on chat_msg.chat_id=chat.chat_id where chat_msg.chat_id=? AND chat.user_id=?", [chatId, userId]);
+    const query = `SELECT chat_msg.* from ${this.msgTable} as chat_msg LEFT JOIN ${this.chatTable} as chat on chat_msg.chat_id=chat.chat_id where chat_msg.chat_id=? AND chat.user_id=?`;
+    const [res] = await pool.execute(query, [chatId, userId]);
     return (res as {[key:string]:string}[]).map((item)=>{
       let ques = null;
       try{
@@ -70,7 +73,7 @@ export class Chat {
   }
 
   public async getLimetedChatMsg(chatId:number, limit:number=100){
-    const query = `SELECT * from chat_msg WHERE chat_id=? LIMIT ${limit}`;
+    const query = `SELECT * from ${this.msgTable} WHERE chat_id=? LIMIT ${limit}`;
     const values = [chatId];
     const [res] = await pool.execute(query, values);
     return (res as {[key:string]:string}[]).map((item)=>{
@@ -92,8 +95,8 @@ export class Chat {
     const connection = await pool.getConnection();
     try {
       await connection.beginTransaction();
-      await connection.execute("DELETE from chat_msg WHERE chat_id=?", [chatId]);
-      const [res] = await connection.execute("DELETE from chat WHERE chat_id=?", [chatId]);
+      await connection.execute(`DELETE from ${this.msgTable} WHERE chat_id=?`, [chatId]);
+      const [res] = await connection.execute(`DELETE from ${this.chatTable} WHERE chat_id=?`, [chatId]);
       connection.commit();
       return (res as ChatResult).insertId ;
     } catch(err) {
@@ -108,7 +111,7 @@ export class Chat {
 
   }
   public async updateChatTitle(chatId:number, title:string){
-    const [res] = await pool.execute("UPDATE chat SET title=? WHERE chat_id=?", [title, chatId]);
+    const [res] = await pool.execute(`UPDATE ${this.chatTable} SET title=? WHERE chat_id=?`, [title, chatId]);
     return (res as ChatResult).insertId ;
 
   }

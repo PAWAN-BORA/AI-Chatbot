@@ -19,18 +19,20 @@ export function streamAsyncIterator(reader:ReadableStreamDefaultReader<Uint8Arra
           const chunk = decoder.decode(value)
           if(first){
             const chunkArr = chunk.split("##CHATID##");
-            yield  {
-              chatId:chunkArr[0],
-              type:"head",
-            }
-            if(chunkArr[1]!=undefined){
+            if(chunkArr.length>=2){
               yield  {
-                content:chunkArr[1],
-                type:"chunk",
+                chatId:chunkArr[0],
+                type:"head",
               }
+              if(chunkArr[1]!=undefined){
+                yield  {
+                  content:chunkArr[1],
+                  type:"chunk",
+                }
+              }
+              first = false;
+              continue;
             }
-            first = false;
-            continue;
           }
           yield  {
             content:chunk,
@@ -62,6 +64,7 @@ export function withErrorHandler(handler:(request:NextRequest)=>Promise<NextResp
       let msg = "Unknow Error";
       let status = 500;
       if(err instanceof Error){
+        console.log(err, 'this is err.')
         msg = err.message;
         status = ERROR_STATUS_CODE_MAP[err.name] ?? 500;
       };
