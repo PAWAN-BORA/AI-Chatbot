@@ -36,6 +36,7 @@ const splitter = new RecursiveCharacterTextSplitter({
 const docs = await splitter.createDocuments([text]);
 await vectorStore.addDocuments(docs);
 
+console.log(vectorStore, 'vectorStore.....')
 
 const systemPrompt = `You are an assistant for question-answering tasks.
 Use the following pieces of retrieved context to answer the question.

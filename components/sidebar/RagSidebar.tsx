@@ -1,8 +1,7 @@
 "use client"
 import { useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react"
-// import Modal from "@/components/Modal";
-import { deleteChat, getChatMsg, getRagChatMsg, updateChat } from "@/utils/chatFetch";
+import { deleteChat, getRagChatMsg, updateChat } from "@/utils/chatFetch";
 import useStore, { AnsData, ChatData, ChatMsg } from "@/store/store";
 import ChatNameBox from "./ChatNameBox";
 import SideHead from "./SideHead";
@@ -11,7 +10,6 @@ import ChatDeleteModal from "./ChatDeleteModal";
 
 export default function RagSidebar({chatId}:Readonly<{chatId:string|undefined}>) {
 
-  // const {getChats} = useContext(StoreContext)!;
   const sidebarList = useStore(state=>state.ragChatList);
   const updateChatList = useStore(state=>state.updateRagChatList);
   const resetData = useStore(state=>state.resetData);
